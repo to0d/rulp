@@ -1,0 +1,3 @@
+
+
+(defun size-of ((?t table)) (size-of-table ?t))

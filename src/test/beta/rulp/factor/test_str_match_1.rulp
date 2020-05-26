@@ -1,0 +1,16 @@
+
+(str-match "*-*" "abc-xyz")
+;=>true
+
+(str-match "*-*" "abc")
+;=>false
+
+(str-match "* *" "abc xyz")
+;=>true
+
+(str-match "*%d" "abc5")
+;=>true
+
+(str-match "*%d" "5")
+;=>true
+

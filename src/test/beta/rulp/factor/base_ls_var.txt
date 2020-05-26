@@ -1,0 +1,7 @@
+1:VAR, name=?file.separator
+2:VAR, name=?os.name
+3:VAR, name=?os.version
+4:VAR, name=?path.separator
+5:VAR, name=?user.dir
+6:VAR, name=?user.home
+7:VAR, name=?user.name

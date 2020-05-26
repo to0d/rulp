@@ -1,0 +1,29 @@
+(alias INTEGER int)
+(alias FLOAT float)
+(alias BOOL bool)
+(alias LIST list)
+
+(defmacro print-list 
+    (?list) 
+    (foreach 
+        (?e ?list) 
+        (print ?e "\n")
+        (return ?e)))
+
+(defmacro ls-print
+    (?option) 
+    (let 
+        ($idx 1) 
+        (loop for ?x in (ls ?option) do 
+            (print $idx ":" (type-of ?x) ", name=" (name-of ?x))
+            (if (equal (type-of ?x) INSTANCE)
+                (print ", class=" (class-of ?x)))
+            (print "\n")
+            (setq $idx (+ $idx 1))
+        )
+    )
+)
+
+(defun size-of ((?l list)) (size-of-list ?l))
+
+
