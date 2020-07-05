@@ -13,13 +13,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import alpha.rulp.lang.RException;
 
 public class StringUtil {
+
+	public enum CharType {
+		CN_CHAR, CN_SYMBOL, EN_CHAR, EN_SYMBOL, JP_SYMBOL, NUMBER, OTHER, ROMAN_NUM, TW_ZHUYIN
+	}
 
 	static interface IMatchParser {
 		public boolean match(String content, ArrayList<String> values, boolean ignoreCase);
@@ -586,50 +589,9 @@ public class StringUtil {
 
 	}
 
-	public static final char CN_CHAR_COLON = 0xff1a; // CN ':'
+	
 
-	public static final char CN_CHAR_COMMNA = 0xff0c; // CN ','
-
-	public static final char CN_CHAR_DUN_HAO = 0x3001; // CN '¡¢'
-
-	public static final char CN_CHAR_EXCLAMATION = 0xff01; // CN '£¡'
-
-	public static final char CN_CHAR_LEFT_BRACKET = 0x3010; // CN '['
-
-	public static final char CN_CHAR_LEFT_KUOHU = 0x300c; // CN '¡¸'
-
-	public static final char CN_CHAR_LEFT_PARENTHESIS = 0xff08; // CN '('
-
-	public static final char CN_CHAR_LEFT_PIE = 0x2018; // CN '¡®'
-
-	public static final char CN_CHAR_LEFT_QUOTE = 0x201c; // CN '¡°'
-
-	public static final char CN_CHAR_LEFT_SHU_MING = 0x300a; // CN '<'
-
-	public static final char CN_CHAR_PERIOD = 0x3002; // CN '.'
-
-	public static final char CN_CHAR_QUESTION_MARK = 0xff1f; // CN '?'
-
-	public static final char CN_CHAR_RIGHT_BRACKET = 0x3011; // CN ']'
-
-	public static final char CN_CHAR_RIGHT_PARENTHESIS = 0xff09; // CN ')'
-
-	public static final char CN_CHAR_RIGHT_QUOTE = 0x201d; // CN '¡±'
-
-	public static final char CN_CHAR_RIGHT_SHU_MIN = 0x300b; // CN '>'
-
-	public static final char CN_CHAR_RIGHTT_KUOHU = 0x300d; // CN '¡¹'
-
-	public static final char CN_CHAR_RIGHTT_PIE = 0x2019; // CN '¡¯'
-
-	public static final char CN_CHAR_SEMICOLON = 0xff1b; // CN ';'
-
-	static List<String> EMPTY_LIST = new LinkedList<>();
-
-	static {
-		EMPTY_LIST = Collections.unmodifiableList(EMPTY_LIST);
-	}
-
+	
 	public static String getSingleMatchString(String mode, String content) throws RException {
 
 		ArrayList<String> values = new ArrayList<>();
@@ -658,33 +620,6 @@ public class StringUtil {
 				|| ub == Character.UnicodeBlock.GENERAL_PUNCTUATION) {
 			return true;
 		}
-		return false;
-	}
-
-	public static boolean isChineseSymbol(char c) {
-		switch (c) {
-		case CN_CHAR_COMMNA: // CN ','
-		case CN_CHAR_DUN_HAO:// CN '¡¢'
-		case CN_CHAR_PERIOD: // '¡£':
-		case CN_CHAR_QUESTION_MARK: // '£¿'
-		case CN_CHAR_EXCLAMATION: // '£¡'
-		case CN_CHAR_COLON:// CN ':'
-		case CN_CHAR_LEFT_BRACKET: // CN '['
-		case CN_CHAR_LEFT_PARENTHESIS:// CN '('
-		case CN_CHAR_LEFT_QUOTE:// CN '¡°'
-		case CN_CHAR_LEFT_SHU_MING:// CN '<'
-		case CN_CHAR_RIGHT_BRACKET: // CN ']'
-		case CN_CHAR_RIGHT_PARENTHESIS: // CN ')'
-		case CN_CHAR_RIGHT_QUOTE:// CN '¡±'
-		case CN_CHAR_RIGHT_SHU_MIN: // CN '>'
-		case CN_CHAR_SEMICOLON:// CN ';'
-		case CN_CHAR_LEFT_KUOHU: // CN '¡¸'
-		case CN_CHAR_RIGHTT_KUOHU: // CN '¡¹'
-		case CN_CHAR_LEFT_PIE: // CN '¡®'
-		case CN_CHAR_RIGHTT_PIE: // CN '¡¯'
-			return true;
-		}
-
 		return false;
 	}
 

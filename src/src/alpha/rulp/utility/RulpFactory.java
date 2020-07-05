@@ -43,6 +43,7 @@ import alpha.rulp.runtime.IRIterator;
 import alpha.rulp.runtime.IRMacro;
 import alpha.rulp.runtime.IRObjectLoader;
 import alpha.rulp.runtime.IRParser;
+import alpha.rulp.runtime.IRTokener;
 import alpha.rulp.runtime.IRVar;
 import alpha.rulp.runtime.RName;
 import alpha.rulp.ximpl.lang.XRAtom;
@@ -67,6 +68,7 @@ import alpha.rulp.ximpl.runtime.XRInterpreter;
 import alpha.rulp.ximpl.runtime.XRLoadBaseObject;
 import alpha.rulp.ximpl.runtime.XRLoadJvmObject;
 import alpha.rulp.ximpl.runtime.XRParser;
+import alpha.rulp.ximpl.runtime.XRTokener;
 import alpha.rulp.ximpl.runtime.factor.XRFactorLs;
 
 public class RulpFactory {
@@ -75,23 +77,19 @@ public class RulpFactory {
 
 	public static final IRList EMPTY_LIST;
 
-	private static final XRBoolean False = new XRBoolean(false);
+	protected static final XRBoolean False = new XRBoolean(false);
 
-	static AtomicInteger frameCount = new AtomicInteger(0);
+	protected static AtomicInteger frameCount = new AtomicInteger(0);
 
-	private static final XRBoolean True = new XRBoolean(true);
+	static List<IRObjectLoader> rulpLoaders = new LinkedList<>();
 
-	static AtomicInteger unNameframeCount = new AtomicInteger(0);
+	protected static final XRBoolean True = new XRBoolean(true);
+
+	protected static AtomicInteger unNameframeCount = new AtomicInteger(0);
 
 	static {
 		EMPTY_LIST = new XRListList(Collections.<IRObject>emptyList(), RType.LIST);
 		EMPTY_EXPR = new XRListList(Collections.<IRObject>emptyList(), RType.EXPR);
-	}
-
-	static List<IRObjectLoader> rulpLoaders = new LinkedList<>();
-
-	public static void registerLoader(IRObjectLoader loader) {
-		rulpLoaders.add(loader);
 	}
 
 	static {
@@ -101,7 +99,7 @@ public class RulpFactory {
 		registerLoader(new XRLoadJvmObject());
 	}
 
-	private static XRFrame _createSystemFrame() {
+	protected static XRFrame _createSystemFrame() {
 
 		return new XRFrame(null, "SYS", 0, getNextFrameId()) {
 
@@ -185,13 +183,13 @@ public class RulpFactory {
 		return new XRFunction(funName, paraNames, paraTypes, funBody, description);
 	}
 
-	public static IRFunctionList createFunctionList(String funName) {
-		return new XRFunctionList(funName);
-	}
-
 	public static IRFunction createFunctionLambda(List<String> paraNames, List<IRAtom> paraTypes, IRList funBody,
 			IRFrame lambdaFrame) {
 		return new XRFunctionLambda(paraNames, paraTypes, funBody, lambdaFrame);
+	}
+
+	public static IRFunctionList createFunctionList(String funName) {
+		return new XRFunctionList(funName);
 	}
 
 	public static IRInteger createInteger(int value) {
@@ -290,7 +288,7 @@ public class RulpFactory {
 	}
 
 	public static IRParser createParser() {
-		return new XRParser();
+		return new XRParser(createTokener());
 	}
 
 	public static <T> IRIterator<T> createRIterator(Iterator<T> iter) throws RException {
@@ -306,6 +304,10 @@ public class RulpFactory {
 		return new XRString(value);
 	}
 
+	public static IRTokener createTokener() {
+		return new XRTokener();
+	}
+
 	public static IRVar createVar(String name) {
 		return new XRVar(name, O_Nil);
 	}
@@ -316,5 +318,9 @@ public class RulpFactory {
 
 	public static int getNextFrameId() {
 		return frameCount.getAndIncrement();
+	}
+
+	public static void registerLoader(IRObjectLoader loader) {
+		rulpLoaders.add(loader);
 	}
 }

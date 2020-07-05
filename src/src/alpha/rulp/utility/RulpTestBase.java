@@ -19,6 +19,7 @@ import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
 import alpha.rulp.runtime.IRInterpreter;
 import alpha.rulp.runtime.IROut;
+import alpha.rulp.runtime.IRParser;
 
 public class RulpTestBase {
 
@@ -40,6 +41,17 @@ public class RulpTestBase {
 		}
 	}
 
+	protected static String _load(String path, String charset) {
+
+		try {
+			return StringUtil.toOneLine(FileUtil.openTxtFile(path, charset));
+		} catch (RException | IOException e) {
+			e.printStackTrace();
+			fail(e.toString());
+			return null;
+		}
+	}
+
 	protected static String _load(String path) {
 
 		try {
@@ -55,6 +67,8 @@ public class RulpTestBase {
 
 	protected XROut out = null;
 
+	protected IRParser _parser = null;
+
 	protected IRInterpreter _createInterpreter() throws RException, IOException {
 		return RulpFactory.createInterpreter();
 	}
@@ -68,10 +82,19 @@ public class RulpTestBase {
 		}
 
 		return _interpreter;
+	}
+
+	protected IRParser _getParser() {
+
+		if (_parser == null) {
+			_parser = RulpFactory.createParser();
+		}
+		return _parser;
 	};
 
 	protected void _setup() {
 		_interpreter = null;
+		_parser = null;
 	}
 
 	protected void _test(String input) {

@@ -21,17 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 import alpha.rulp.lang.IRAtom;
-import alpha.rulp.lang.IRFloat;
-import alpha.rulp.lang.IRInteger;
+import alpha.rulp.lang.IRExpr;
 import alpha.rulp.lang.IRList;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.IRString;
 import alpha.rulp.lang.RException;
 import alpha.rulp.runtime.IRParser;
+import alpha.rulp.runtime.IRTokener;
+import alpha.rulp.runtime.IRTokener.Token;
+import alpha.rulp.runtime.IRTokener.TokenType;
 import alpha.rulp.runtime.RName;
 import alpha.rulp.utility.RulpFactory;
 import alpha.rulp.utility.StringUtil;
-import alpha.rulp.ximpl.runtime.XTokener.Token;
 
 /* ************************************************************ */
 // RULP rules                                 
@@ -59,17 +60,20 @@ import alpha.rulp.ximpl.runtime.XTokener.Token;
 /* ************************************************************ */
 public class XRParser implements IRParser {
 
-	static final Token END_TOKEN = new Token(Token.TT_9END, null, -1);
+	static final Token END_TOKEN = new Token(TokenType.TT_9END, null, -1);
+
 	public static final int MAX_PARSE_COUNT = 65535 * 64;
+
 	public static final int MAX_STACK_DEPTH = 65535;
+
 	public static final int MAX_TOKEN_COUNT = 65535 * 64;
 
 	private static boolean _isBlankToken(Token token) {
-		return token.type == Token.TT_1BLK;
+		return token.type == TokenType.TT_1BLK;
 	}
 
 	private static boolean _isEndToken(Token token) {
-		return token.type == Token.TT_9END;
+		return token.type == TokenType.TT_9END;
 	}
 
 	private static boolean _isSupportIdentifierHeadToken(Token token) {
@@ -80,12 +84,19 @@ public class XRParser implements IRParser {
 
 		switch (token.type) {
 
-		case Token.TT_3NAM: {
-			int firstCharType = XTokener.getCharType(token.value.charAt(0));
-			return firstCharType == XTokener.CT_CHAR || firstCharType == XTokener.CT_UNDERSCORE;
-		}
-		case Token.TT_2SYM:
+		case TT_3NAM: {
 
+			switch (XRTokener.getCharType(token.value.charAt(0))) {
+			case XRTokener.C00_CHAR:
+			case XRTokener.C01_NUM:
+			case XRTokener.C04_UNDERSCORE:
+				return true;
+			}
+
+			break;
+		}
+
+		case TT_2SYM:
 			switch (token.value) {
 			case "$":
 			case "_":
@@ -93,11 +104,13 @@ public class XRParser implements IRParser {
 				return true;
 			}
 
-			return false;
+			break;
+
 		default:
 			return false;
 		}
 
+		return false;
 	}
 
 	static <T> void _set(ArrayList<T> array, int index, T v) {
@@ -127,11 +140,22 @@ public class XRParser implements IRParser {
 
 	private int stackDepth = 0;
 
+	private boolean supportComment = true;
+
+	private boolean supportNumber = true;
+
 	private int tokenCount = 0;
+
+	private IRTokener tokener;
 
 	private ArrayList<Integer> tokenIndexs = new ArrayList<>();
 
 	private ArrayList<Token> tokenList = new ArrayList<>();
+
+	public XRParser(IRTokener tokener) {
+		super();
+		this.tokener = tokener;
+	}
 
 	private void _checkRecursion() throws RException {
 
@@ -212,11 +236,14 @@ public class XRParser implements IRParser {
 					continue NEXT;
 				}
 
-				// find symbol ";"
-				if (token.type == Token.TT_2SYM && token.value != null && token.value.equals(";")) {
-					_pushStack(1);
-					ignoreComment = true;
-					continue NEXT;
+				if (isSupportComment()) {
+
+					// find symbol ";"
+					if (token.type == TokenType.TT_2SYM && token.value != null && token.value.equals(";")) {
+						_pushStack(1);
+						ignoreComment = true;
+						continue NEXT;
+					}
 				}
 			}
 
@@ -258,7 +285,7 @@ public class XRParser implements IRParser {
 			throw new RException();
 
 		int pos = _tokenPos() + addTokenCount;
-		if (pos >= MAX_STACK_DEPTH) {
+		if (pos >= MAX_TOKEN_COUNT) {
 			throw new RException(String.format("[%d, %d]: buffer overflow", lineIndex, linePos));
 		}
 
@@ -269,205 +296,20 @@ public class XRParser implements IRParser {
 		return tokenIndexs.get(_depth());
 	}
 
-	private boolean buildMatchExpression(List<IRObject> expression) throws RException {
-
-		_checkRecursion();
-
-		if (!_more()) {
-			return true;
-		}
-
-		/* save depth of option */
-		int depth = _depth();
-
-		/******************************************/
-		// Try match quote: '()
-		/******************************************/
-		if (matchSymbol('\'') && _ignoreBlank()) {
-
-			IRList list = matchList();
-			if (list != null) {
-				expression.add(list);
-				_ignoreBlank();
-
-				buildMatchExpression(expression);
-				return true;
-			} else {
-				_pullStack(depth);
-			}
-		} else {
-			_pullStack(depth);
-		}
-
-		/******************************************/
-		// Try match Expression: ()
-		/******************************************/
-		{
-			IRList expr = matchExpression();
-			if (expr != null) {
-				expression.add(expr);
-				_ignoreBlank();
-
-				buildMatchExpression(expression);
-				return true;
-			} else {
-				_pullStack(depth);
-			}
-		}
-
-		/******************************************/
-		// Try match var: &abc
-		/******************************************/
-		if (matchSymbol('&') && _ignoreBlank()) {
-
-			String atomName = matchAtom();
-			if (atomName != null) {
-				expression.add(RulpFactory.createVar(atomName));
-				_ignoreBlank();
-
-				buildMatchExpression(expression);
-				return true;
-			} else {
-				_pullStack(depth);
-			}
-		} else {
-			_pullStack(depth);
-		}
-
-		/******************************************/
-		// Try match atom: abc
-		/******************************************/
-		{
-			String atomName = matchAtom();
-
-			if (atomName != null) {
-
-				switch (atomName) {
-				case A_TRUE:
-					expression.add(O_True);
-					break;
-				case A_FALSE:
-					expression.add(O_False);
-					break;
-				default:
-
-					RName rName = _getRName(atomName);
-					if (rName == null) {
-						expression.add(RulpFactory.createAtom(atomName));
-					} else {
-						expression.add(RulpFactory.createAtom(rName));
-					}
-				}
-
-				_ignoreBlank();
-				buildMatchExpression(expression);
-
-				return true;
-
-			} else {
-				_pullStack(depth);
-			}
-		}
-
-		/******************************************/
-		// Try match string: "abc"
-		/******************************************/
-		IRString str = matchString();
-		if (str != null) {
-
-			expression.add(str);
-			_ignoreBlank();
-			buildMatchExpression(expression);
-			return true;
-
-		} else {
-			_pullStack(depth);
-		}
-
-		/******************************************/
-		// Try match int: integer
-		/******************************************/
-		IRInteger intVal = matchInteger();
-		if (intVal != null) {
-			expression.add(intVal);
-			_ignoreBlank();
-			buildMatchExpression(expression);
-			return true;
-
-		} else {
-			_pullStack(depth);
-		}
-
-		/******************************************/
-		// Try match float: integer
-		/******************************************/
-		IRFloat floatVal = matchFloat();
-		if (floatVal != null) {
-			expression.add(floatVal);
-			_ignoreBlank();
-			buildMatchExpression(expression);
-			return true;
-
-		} else {
-			_pullStack(depth);
-		}
-
-		/******************************************/
-		// Try match operator
-		/******************************************/
-		IRAtom opr = matchOperator();
-		if (opr != null) {
-			expression.add(opr);
-			_ignoreBlank();
-			buildMatchExpression(expression);
-			return true;
-
-		} else {
-			_pullStack(depth);
-		}
-
-		return false;
+	@Override
+	public IRTokener getTokener() {
+		return tokener;
 	}
 
-	private String matchAtom() throws RException {
-
-		_checkRecursion();
-
-		/* save depth of option */
-		int depth = _depth();
-		Token token = null;
-
-		if ((token = _curToken()) != null && _isSupportIdentifierHeadToken(token)) {
-
-			/* output token */
-			_pushStack(1);
-
-			String atomName = token.value;
-
-			FIND: while (_more() && (token = _curToken()) != null && token.value != null && token.value.length() > 0
-					&& !_isBlankToken(token)) {
-
-				if (token.type == Token.TT_2SYM) {
-					switch (token.value) {
-					case "(":
-					case ")":
-						break FIND;
-					}
-				}
-
-				atomName += token.value;
-				_pushStack(1);
-
-			}
-
-			return atomName;
-		}
-
-		_pullStack(depth);
-		return null;
+	public boolean isSupportComment() {
+		return supportComment;
 	}
 
-	private IRList matchExpression() throws RException {
+	public boolean isSupportNumber() {
+		return supportNumber;
+	}
+
+	private IRExpr matchExpression() throws RException {
 
 		_checkRecursion();
 
@@ -495,7 +337,12 @@ public class XRParser implements IRParser {
 		}
 
 		ArrayList<IRObject> list = new ArrayList<>();
-		if (buildMatchExpression(list) && _ignoreBlank() && matchSymbol(')')) {
+		IRObject obj = null;
+		while (_ignoreBlank() && (obj = nextObject()) != null) {
+			list.add(obj);
+		}
+
+		if (_ignoreBlank() && matchSymbol(')')) {
 			return RulpFactory.createExpression(list);
 		}
 
@@ -503,7 +350,7 @@ public class XRParser implements IRParser {
 		return null;
 	}
 
-	private IRFloat matchFloat() throws RException {
+	private IRObject matchFloat() throws RException {
 
 		_checkRecursion();
 
@@ -511,21 +358,23 @@ public class XRParser implements IRParser {
 
 		Token pToken;
 
-		if ((pToken = _curToken()) != null && pToken.type == Token.TT_6FLT) {
+		if ((pToken = _curToken()) != null && pToken.type == TokenType.TT_6FLT) {
 
-			String value = pToken.value;
-
-			/* output token */
 			_pushStack(1);
 
-			return RulpFactory.createFloat(Float.valueOf(value));
+			if (this.isSupportNumber()) {
+				return (RulpFactory.createFloat(Float.valueOf(pToken.value)));
+			} else {
+				return (RulpFactory.createAtom(pToken.value));
+			}
+
 		}
 
 		_pullStack(depth);
 		return null;
 	}
 
-	private IRInteger matchInteger() throws RException {
+	private IRObject matchInteger() throws RException {
 
 		_checkRecursion();
 
@@ -533,10 +382,14 @@ public class XRParser implements IRParser {
 
 		Token pToken;
 
-		if ((pToken = _curToken()) != null && pToken.type == Token.TT_5INT) {
-			String value = pToken.value;
+		if ((pToken = _curToken()) != null && pToken.type == TokenType.TT_5INT) {
 			_pushStack(1);
-			return RulpFactory.createInteger(Integer.valueOf(value));
+			if (this.isSupportNumber()) {
+				return (RulpFactory.createInteger(Integer.valueOf(pToken.value)));
+			} else {
+				return (RulpFactory.createAtom(pToken.value));
+			}
+
 		}
 
 		_pullStack(depth);
@@ -571,7 +424,12 @@ public class XRParser implements IRParser {
 		}
 
 		ArrayList<IRObject> list = new ArrayList<>();
-		if (buildMatchExpression(list) && _ignoreBlank() && matchSymbol(')')) {
+		IRObject obj = null;
+		while (_ignoreBlank() && (obj = nextObject()) != null) {
+			list.add(obj);
+		}
+
+		if (_ignoreBlank() && matchSymbol(')')) {
 			return RulpFactory.createList(list);
 		}
 
@@ -589,13 +447,14 @@ public class XRParser implements IRParser {
 
 		String sym = "";
 
-		FIND_NEXT: while (_more() && (token = _curToken()) != null && token.type == Token.TT_2SYM) {
+		NEXT_TOKEN: while (_more() && (token = _curToken()) != null && token.type == TokenType.TT_2SYM) {
 
 			switch (token.value) {
 			case "(":
 			case ")":
 				_pullStack(depth);
-				break FIND_NEXT;
+				break NEXT_TOKEN;
+
 			default:
 				sym += token.value;
 				_pushStack(1);
@@ -603,11 +462,12 @@ public class XRParser implements IRParser {
 			}
 		}
 
-		if (sym.isEmpty()) {
-			return null;
+		if (!sym.isEmpty()) {
+			return RulpFactory.createAtom(sym);
 		}
 
-		return RulpFactory.createAtom(sym);
+		_pullStack(depth);
+		return null;
 	}
 
 	private IRString matchString() throws RException {
@@ -618,12 +478,10 @@ public class XRParser implements IRParser {
 
 		Token pToken;
 
-		if ((pToken = _curToken()) != null && pToken.type == Token.TT_4STR) {
+		if ((pToken = _curToken()) != null && pToken.type == TokenType.TT_4STR) {
 
 			String value = pToken.value;
 			value = value.substring(1, value.length() - 1);
-
-			/* output token */
 			_pushStack(1);
 
 			return RulpFactory.createString(value);
@@ -639,7 +497,7 @@ public class XRParser implements IRParser {
 
 		Token token;
 
-		if ((token = _curToken()) != null && token.type == Token.TT_2SYM && token.value != null
+		if ((token = _curToken()) != null && token.type == TokenType.TT_2SYM && token.value != null
 				&& token.value.length() == 1 && token.value.charAt(0) == symbol) {
 
 			/* output symbol */
@@ -648,6 +506,298 @@ public class XRParser implements IRParser {
 		}
 
 		return false;
+	}
+
+	private String nextAtom() throws RException {
+
+		_checkRecursion();
+
+		/* save depth of option */
+		int depth = _depth();
+		Token token = null;
+
+		if ((token = _curToken()) != null && _isSupportIdentifierHeadToken(token)) {
+
+			_pushStack(1);
+
+			String atomName = token.value;
+			FIND: while (_more() && (token = _curToken()) != null && token.value != null && token.value.length() > 0
+					&& !_isBlankToken(token)) {
+
+				if (token.type == TokenType.TT_2SYM) {
+					switch (token.value) {
+					case "(":
+					case ")":
+						break FIND;
+					}
+				}
+
+				atomName += token.value;
+				_pushStack(1);
+
+			}
+
+			return atomName;
+		}
+
+		_pullStack(depth);
+		return null;
+	}
+
+	static boolean _isSeparatorToken(Token token) throws RException {
+
+		if (token == null) {
+			return true;
+		}
+
+		switch (token.type) {
+		case TT_1BLK:
+		case TT_9END:
+			return true;
+
+		case TT_2SYM:
+			switch (token.value) {
+			case "(":
+			case ")":
+				return true;
+			}
+
+		default:
+
+		}
+
+		return false;
+	}
+
+	private IRObject nextObject() throws RException {
+
+		_checkRecursion();
+
+		if (!_more()) {
+			return null;
+		}
+
+		int depth = _depth();
+
+		Token token = _curToken();
+		_pushStack(1);
+		Token next = _curToken();
+
+		/******************************************/
+		// Combine Symbols
+		/******************************************/
+		if (!_isSeparatorToken(next)) {
+
+			switch (token.type) {
+
+			case TT_2SYM:
+
+				switch (token.value) {
+
+				case "&":
+					/******************************************/
+					// Try match var: &abc
+					/******************************************/
+					String atomName = nextAtom();
+					if (atomName != null) {
+						return RulpFactory.createVar(atomName);
+					}
+					break;
+
+				case "+":
+				case "-":
+
+					/******************************************/
+					// Try match (+/-)number
+					/******************************************/
+					if (this.isSupportNumber()) {
+
+						_pushStack(1);
+
+						if (!_isSeparatorToken(next)) {
+
+							switch (next.type) {
+
+							// -123 or +123
+							case TT_5INT:
+								int intVal = Integer.valueOf(next.value);
+								if (token.value.equals("-")) {
+									intVal = -intVal;
+								}
+
+								return RulpFactory.createInteger(intVal);
+
+							// -1.5 or +1.5
+							case TT_6FLT:
+
+								float fltVal = Float.valueOf(next.value);
+								if (token.value.equals("-")) {
+									fltVal = -fltVal;
+								}
+
+								return RulpFactory.createFloat(fltVal);
+
+							default:
+							}
+						}
+
+					}
+
+					break; // break switch cur_token value
+
+				default: // other symbol
+
+				} // end of switch cur_token value
+				break;
+
+			default:
+
+			} // switch cur_token type
+
+		}
+		// non Combine Symbols
+		else {
+
+			switch (token.type) {
+			/******************************************/
+			// Try match integer
+			/******************************************/
+			case TT_5INT:
+
+				if (this.isSupportNumber()) {
+					return RulpFactory.createInteger(Integer.valueOf(token.value));
+				}
+
+				break;
+
+			/******************************************/
+			// Try match float
+			/******************************************/
+			case TT_6FLT:
+
+				if (this.isSupportNumber()) {
+					return RulpFactory.createFloat(Float.valueOf(token.value));
+				}
+
+				break;
+
+			/******************************************/
+			// Try match string: "abc"
+			/******************************************/
+			case TT_4STR:
+				String value = token.value;
+				value = value.substring(1, value.length() - 1);
+				return RulpFactory.createString(value);
+
+			default:
+			}
+		}
+
+		/******************************************/
+		// Try match List: '()
+		/******************************************/
+		_pullStack(depth);
+		if (matchSymbol('\'') && _ignoreBlank()) {
+			IRList list = matchList();
+			if (list != null) {
+				return list;
+			}
+		}
+
+		/******************************************/
+		// Try match Expression: ()
+		/******************************************/
+		_pullStack(depth);
+		{
+			IRExpr expr = matchExpression();
+			if (expr != null) {
+				return expr;
+			}
+		}
+
+		/******************************************/
+		// Try match atom: abc
+		/******************************************/
+		_pullStack(depth);
+		{
+			String atomName = nextAtom();
+
+			if (atomName != null) {
+
+				switch (atomName) {
+				case A_TRUE:
+					return O_True;
+
+				case A_FALSE:
+					return O_False;
+
+				default:
+
+					RName rName = _getRName(atomName);
+					if (rName == null) {
+						return RulpFactory.createAtom(atomName);
+					} else {
+						return RulpFactory.createAtom(rName);
+					}
+				}
+
+			}
+		}
+
+//		_pullStack(depth);
+//		{
+//			IRString val = matchString();
+//			if (val != null) {
+//				return val;
+//			}
+//		}
+
+//		/******************************************/
+//		// Try match integer
+//		/******************************************/
+//		_pullStack(depth);
+//		{
+//			IRObject obj = matchInteger();
+//			if (obj != null) {
+//				return obj;
+//			}
+//		}
+//
+//		/******************************************/
+//		// Try match float
+//		/******************************************/
+//		_pullStack(depth);
+//		{
+//			IRObject obj = matchFloat();
+//			if (obj != null) {
+//				return obj;
+//			}
+//		}
+
+		/******************************************/
+		// Try match operator
+		/******************************************/
+		_pullStack(depth);
+		String sym = "";
+		while (_more() && (token = _curToken()) != null && !_isSeparatorToken(token)) {
+
+			_pushStack(1);
+			sym += token.value;
+		}
+
+		if (!sym.isEmpty()) {
+			return RulpFactory.createAtom(sym);
+		}
+
+//		{
+//			IRAtom val = matchOperator();
+//			if (val != null) {
+//				return val;
+//			}
+//		}
+
+		_pullStack(depth);
+		return null;
 	}
 
 	@Override
@@ -672,25 +822,16 @@ public class XRParser implements IRParser {
 				continue;
 			}
 
-			XTokener parser = new XTokener(newLine);
+			tokener.setContent(newLine);
 			Token token = null;
 			boolean ignoreHeadSpace = true;
 
-			while ((token = parser.next()) != null) {
+			while ((token = tokener.next()) != null) {
 
 				token.lineIndex = parseLineindex;
 
-				if (token.type == 0) {
+				if (token.type == TokenType.TT_0BAD) {
 					throw new RException(String.format("Bad token: %s", token.toString()));
-				}
-
-				if (token.type < -1) {
-					throw new RException(String.format("Internal error: %s", token.toString()));
-				}
-
-				if (token.type == -1) {
-					// scan token end,
-					break; // break while
 				}
 
 				/********************************/
@@ -730,12 +871,10 @@ public class XRParser implements IRParser {
 		// Match rules
 		/****************************************************/
 		ArrayList<IRObject> list = new ArrayList<>();
-		while (_more()) {
+		while (_ignoreBlank() && _more()) {
 
-			_ignoreBlank();
-
-			if (!buildMatchExpression(list)) {
-
+			IRObject obj = nextObject();
+			if (obj == null) {
 				Token lastToken = this._curToken();
 				int lastLineIndex = lastToken == null ? -1 : lastToken.lineIndex;
 				String lastLine = lastLineIndex == -1 ? null : lines.get(lastLineIndex);
@@ -743,6 +882,14 @@ public class XRParser implements IRParser {
 				throw new RException(
 						String.format("Bad Syntax at line %d: token=%s, line=%s", lastLineIndex, lastToken, lastLine));
 			}
+
+			list.add(obj);
+
+			// Clean stack
+			int curTokenPos = _tokenPos();
+			this.tokenIndexs.clear();
+			this.tokenIndexs.add(curTokenPos);
+			this.stackDepth = 0;
 		}
 
 		return list;
@@ -751,6 +898,16 @@ public class XRParser implements IRParser {
 	@Override
 	public void registerPrefix(String prefix, String nameSpace) {
 		prefixNameSpaceMap.put(prefix, nameSpace);
+	}
+
+	@Override
+	public void setSupportComment(boolean supportComment) {
+		this.supportComment = supportComment;
+	}
+
+	@Override
+	public void setSupportNumber(boolean supportNumber) {
+		this.supportNumber = supportNumber;
 	}
 
 }

@@ -16,7 +16,14 @@ import alpha.rulp.lang.RException;
 
 public interface IRParser {
 
+	public IRTokener getTokener();
+
 	public List<IRObject> parse(String inputLine) throws RException;
 
 	public void registerPrefix(String prefix, String nameSpace);
+
+	public void setSupportComment(boolean supportComment);
+
+	public void setSupportNumber(boolean supportNumber);
+
 }
