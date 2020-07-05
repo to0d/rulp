@@ -4,30 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
 
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
-import alpha.rulp.runtime.IRParser;
+import alpha.rulp.utility.FileUtil;
+import alpha.rulp.utility.RulpTestBase;
 import alpha.rulp.utility.RulpUtility;
-import alpha.rulp.ximpl.runtime.XRParser;
 
-public class XRParserTest {
-
-	private IRParser parser = null;
-
-	IRParser _getParser() {
-		if (parser == null) {
-			parser = new XRParser();
-		}
-		return parser;
-	}
-
-	void _setup() {
-		parser = null;
-	}
+public class XRParserTest extends RulpTestBase {
 
 	void _test_parse_line(String line) {
 		_test_parse_line(line, line, true);
@@ -60,11 +48,9 @@ public class XRParserTest {
 
 	void _test_parse_line_error(String input, String error) {
 
-		IRParser parser = new XRParser();
-
 		try {
 
-			parser.parse(input);
+			_getParser().parse(input);
 			fail("Should fail: " + input);
 
 		} catch (RException e) {
@@ -77,9 +63,17 @@ public class XRParserTest {
 	public void test_1_atom() {
 
 		_setup();
-		_test_parse_line("a");
-		_test_parse_line("\"a b c\"");
-		_test_parse_line("哈利·托特达夫");
+
+		try {
+			for (String line : FileUtil.openTxtFile("test/beta/rulp/runtime/parse_atom_1.txt", "utf-8")) {
+				if (line.isEmpty()) {
+					continue;
+				}
+				_test_parse_line(line);
+			}
+		} catch (IOException e) {
+			fail(e.toString());
+		}
 	}
 
 	@Test
@@ -131,24 +125,29 @@ public class XRParserTest {
 	}
 
 	@Test
-	public void test_3_value_not_support_yet() {
-
-		_setup();
-		_test_parse_line("11.0e+4");
-	}
-
-	@Test
 	public void test_4_vars() {
 
 		_setup();
 		_test_parse_line("&var");
-		_test_parse_line("& var", "&var");
+		_test_parse_line("& var", "& var");
 	}
 
 	@Test
 	public void test_5_list() {
 
 		_setup();
+
+		_test_parse_line("'(a b c)");
+		_test_parse_line("' (a b c)", "'(a b c)");
+	}
+
+	@Test
+	public void test_5_expr() {
+
+		_setup();
+
+		_test_parse_line("(+ 1 2 3)");
+		_test_parse_line("(-a)");
 		_test_parse_line("()");
 		_test_parse_line("(())");
 		_test_parse_line("(_a)");
@@ -156,7 +155,6 @@ public class XRParserTest {
 		_test_parse_line("((a))");
 		_test_parse_line("((a) b)");
 		_test_parse_line("((&a) &b)");
-		_test_parse_line("'(a b c)");
 		_test_parse_line("(\"abc\")");
 		_test_parse_line("(?xx)");
 		_test_parse_line("(setRelatedTags $NOTE $RULE $UID)");
@@ -172,6 +170,7 @@ public class XRParserTest {
 		_test_parse_line("(a b ?)", "(a b ?)", true);
 		_test_parse_line("(join (query a b ?) (query ? b d))");
 		_test_parse_line("(defmacro ?x (?Team) \"a dest\" (join (x AS400 hasChild ?) (y ?Team termAttrOf ?)))");
+
 	}
 
 	@Test
@@ -191,6 +190,31 @@ public class XRParserTest {
 	}
 
 	@Test
+	public void test_9_multi_lines() {
+
+		_setup();
+		_test_parse_line("(a b)\n(x y)", "(a b) (x y)");
+		_test_parse_line("(a b);a comment line\n(x y)", "(a b) (x y)");
+		_test_parse_line("(a b ;a comment line\n" + "(x y);\n" + ")", "(a b (x y))");
+		_test_parse_line("(a b \n\n   )", "(a b)");
+
+	}
+
+	@Test
+	public void test_9_multi_lines_2() {
+		_setup();
+		_test_parse_line(_load("test/beta/rulp/runtime/parse_in_1.txt", "utf-8"),
+				_load("test/beta/rulp/runtime/parse_out_1.txt", "utf-8"));
+	}
+
+	@Test
+	public void test_9_multi_lines_3() {
+		_setup();
+		_test_parse_line(_load("test/beta/rulp/runtime/parse_in_2.txt", "utf-8"),
+				_load("test/beta/rulp/runtime/parse_out_2.txt", "utf-8"));
+	}
+
+	@Test
 	public void test_9_special_string() {
 
 		_setup();
@@ -203,17 +227,6 @@ public class XRParserTest {
 		_setup();
 		_test_parse_line("(defvar ?file-separatorChar \"/\")");
 		_test_parse_line("(defvar ?file-separatorChar \"\\\")");
-	}
-
-	@Test
-	public void test_9_multi_lines() {
-
-		_setup();
-		_test_parse_line("(a b)\n(x y)", "(a b) (x y)");
-		_test_parse_line("(a b);a comment line\n(x y)", "(a b) (x y)");
-		_test_parse_line("(a b ;a comment line\n" + "(x y);\n" + ")", "(a b (x y))");
-		_test_parse_line("(a b \n\n   )", "(a b)");
-
 	}
 
 	@Test
@@ -230,5 +243,39 @@ public class XRParserTest {
 		_getParser().registerPrefix("nm", "https://github.com/to0d/nm#");
 		_test_parse_line("nm:hasChild", "nm:hasChild");
 		_test_parse_line("(nm:a nm:b)", "(nm:a nm:b)");
+	}
+
+	@Test
+	public void test_c_number() {
+
+		_setup();
+		this._getParser().setSupportNumber(false);
+		_test_parse_line("1111111111111111111111111111111");
+		_test_parse_line("100");
+		_test_parse_line("1.0");
+		_test_parse_line("+100");
+		_test_parse_line("-100");
+		_test_parse_line("+1.0");
+		_test_parse_line("-1.0");
+		_test_parse_line("11.0e+4");
+
+		_setup();
+		_test_parse_line("100");
+		_test_parse_line("1.0");
+		_test_parse_line("+100", "100");
+		_test_parse_line("-100");
+		_test_parse_line("+1.0", "1.0");
+		_test_parse_line("-1.0");
+		_test_parse_line("11.0e+4");
+	}
+
+	@Test
+	public void test_d_any() {
+		_setup();
+		_test_parse_line("&name");
+		_test_parse_line("-NONE-");
+		_test_parse_line("*pro*");
+		_test_parse_line("*T*-2");
+		_test_parse_line("(3.2万)");
 	}
 }

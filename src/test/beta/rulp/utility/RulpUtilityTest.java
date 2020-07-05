@@ -10,23 +10,10 @@ import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
 import alpha.rulp.runtime.IRParser;
 import alpha.rulp.utility.RulpFactory;
+import alpha.rulp.utility.RulpTestBase;
 import alpha.rulp.utility.RulpUtility;
-import alpha.rulp.ximpl.runtime.XRParser;
 
-public class RulpUtilityTest {
-
-	private IRParser parser = null;
-
-	IRParser _getParser() {
-		if (parser == null) {
-			parser = new XRParser();
-		}
-		return parser;
-	}
-
-	void _setup() {
-		parser = null;
-	}
+public class RulpUtilityTest extends RulpTestBase {
 
 	public void _test_toString(String input, String expect) {
 
