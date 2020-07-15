@@ -28,6 +28,7 @@ import alpha.rulp.lang.IRExpr;
 import alpha.rulp.lang.IRFloat;
 import alpha.rulp.lang.IRInteger;
 import alpha.rulp.lang.IRList;
+import alpha.rulp.lang.IRLong;
 import alpha.rulp.lang.IRNative;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.IRString;
@@ -43,6 +44,7 @@ import alpha.rulp.runtime.IRIterator;
 import alpha.rulp.runtime.IRMacro;
 import alpha.rulp.runtime.IRObjectLoader;
 import alpha.rulp.runtime.IRParser;
+import alpha.rulp.runtime.IRThreadContext;
 import alpha.rulp.runtime.IRTokener;
 import alpha.rulp.runtime.IRVar;
 import alpha.rulp.runtime.RName;
@@ -56,6 +58,7 @@ import alpha.rulp.ximpl.lang.XRListBuilderIterator;
 import alpha.rulp.ximpl.lang.XRListIterator;
 import alpha.rulp.ximpl.lang.XRListIteratorR;
 import alpha.rulp.ximpl.lang.XRListList;
+import alpha.rulp.ximpl.lang.XRLong;
 import alpha.rulp.ximpl.lang.XRMacro;
 import alpha.rulp.ximpl.lang.XRNative;
 import alpha.rulp.ximpl.lang.XRString;
@@ -68,6 +71,7 @@ import alpha.rulp.ximpl.runtime.XRInterpreter;
 import alpha.rulp.ximpl.runtime.XRLoadBaseObject;
 import alpha.rulp.ximpl.runtime.XRLoadJvmObject;
 import alpha.rulp.ximpl.runtime.XRParser;
+import alpha.rulp.ximpl.runtime.XRThreadContext;
 import alpha.rulp.ximpl.runtime.XRTokener;
 import alpha.rulp.ximpl.runtime.factor.XRFactorLs;
 
@@ -101,7 +105,7 @@ public class RulpFactory {
 
 	protected static XRFrame _createSystemFrame() {
 
-		return new XRFrame(null, "SYS", 0, getNextFrameId()) {
+		return new XRFrame(null, "SYS", 0, getNextFrameId(), null) {
 
 			@Override
 			public IRFrameEntry removeEntry(String name) throws RException {
@@ -132,7 +136,8 @@ public class RulpFactory {
 			name = String.format("frame-%d", unNameframeCount.getAndIncrement());
 		}
 
-		return new XRFrame(parentFrame, name, parentFrame.getLevel() + 1, getNextFrameId());
+		return new XRFrame(parentFrame, name, parentFrame.getLevel() + 1, getNextFrameId(),
+				parentFrame.getThreadContext());
 	}
 
 	public static IRError createError(IRAtom id, IRObject value) {
@@ -194,17 +199,11 @@ public class RulpFactory {
 
 	public static IRInteger createInteger(int value) {
 		return new XRInteger(value);
-
 	}
 
 	public static IRInterpreter createInterpreter() throws RException, IOException {
 
 		XRInterpreter interpreter = new XRInterpreter();
-
-		/******************************************************/
-		// Init Parser
-		/******************************************************/
-		interpreter.setParser(RulpFactory.createParser());
 
 		/******************************************************/
 		// Init Frame
@@ -267,6 +266,10 @@ public class RulpFactory {
 		}, RType.LIST);
 	}
 
+	public static IRLong createLong(long value) {
+		return new XRLong(value);
+	}
+
 	public static IRMacro createMacro(String macroName, List<String> paraNames, IRList macroBody, String description) {
 		return new XRMacro(macroName, paraNames, macroBody, description);
 	}
@@ -302,6 +305,10 @@ public class RulpFactory {
 		}
 
 		return new XRString(value);
+	}
+
+	public static IRThreadContext createThreadContext() {
+		return new XRThreadContext();
 	}
 
 	public static IRTokener createTokener() {

@@ -132,4 +132,7 @@ public class XRFactorLoop extends AbsRFactorAdapter implements IRFactor {
 
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

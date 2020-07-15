@@ -97,4 +97,7 @@ public class XRFactorDefmacro extends AbsRFactorAdapter implements IRFactor {
 		return macro;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

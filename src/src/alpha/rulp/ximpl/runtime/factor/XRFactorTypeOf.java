@@ -52,4 +52,8 @@ public class XRFactorTypeOf extends AbsRFactorAdapter implements IRFactor {
 
 		return RType.toObject(type);
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

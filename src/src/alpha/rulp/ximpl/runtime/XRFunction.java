@@ -19,6 +19,7 @@ import alpha.rulp.lang.IRAtom;
 import alpha.rulp.lang.IRList;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
+import alpha.rulp.lang.RReturn;
 import alpha.rulp.lang.RType;
 import alpha.rulp.runtime.IRFrame;
 import alpha.rulp.runtime.IRFunction;
@@ -128,13 +129,19 @@ public class XRFunction implements IRFunction {
 			}
 		}
 
-		IRObject rst = null;
-		IRIterator<? extends IRObject> iter = funBody.iterator();
-		while (iter.hasNext()) {
-			rst = interpreter.compute(funFrame, iter.next());
+		try {
+
+			IRObject rst = null;
+			IRIterator<? extends IRObject> iter = funBody.iterator();
+			while (iter.hasNext()) {
+				rst = interpreter.compute(funFrame, iter.next());
+			}
+			return rst;
+
+		} catch (RReturn r) {
+			return r.getReturnValue();
 		}
 
-		return rst;
 	}
 
 	@Override
@@ -171,6 +178,10 @@ public class XRFunction implements IRFunction {
 	@Override
 	public RType getType() {
 		return RType.FUNC;
+	}
+
+	public boolean isThreadSafe() {
+		return true;
 	}
 
 	public String toString() {

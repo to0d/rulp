@@ -132,31 +132,13 @@ public class XRFunctionList implements IRFunctionList {
 		return true;
 	}
 
-	protected Map<Integer, FuncList> funListMap = new HashMap<>();
-
 	protected List<IRFunction> allFuncList = new LinkedList<>();
+
+	protected Map<Integer, FuncList> funListMap = new HashMap<>();
 
 	protected String name;
 
 	protected String signature;
-
-	@Override
-	public String getSignature() throws RException {
-
-		if (signature == null) {
-
-			ArrayList<String> allSignatures = new ArrayList<>();
-
-			for (IRFunction func : allFuncList) {
-				allSignatures.add(func.getSignature());
-			}
-
-			Collections.sort(allSignatures);
-			signature = RulpUtility.toString(RulpFactory.createListOfString(allSignatures));
-		}
-
-		return signature;
-	}
 
 	public XRFunctionList(String name) {
 		super();
@@ -198,7 +180,7 @@ public class XRFunctionList implements IRFunctionList {
 			throw new RException(String.format("match funcion not found:  expr=%s", args));
 		}
 
-		return matchFun.compute(args, interpreter, frame);
+		return RuntimeUtils.computeCallable(matchFun, args, interpreter, frame);
 	}
 
 	@Override
@@ -217,12 +199,33 @@ public class XRFunctionList implements IRFunctionList {
 	}
 
 	@Override
+	public String getSignature() throws RException {
+
+		if (signature == null) {
+
+			ArrayList<String> allSignatures = new ArrayList<>();
+
+			for (IRFunction func : allFuncList) {
+				allSignatures.add(func.getSignature());
+			}
+
+			Collections.sort(allSignatures);
+			signature = RulpUtility.toString(RulpFactory.createListOfString(allSignatures));
+		}
+
+		return signature;
+	}
+
+	@Override
 	public RType getType() {
 		return RType.FUNC;
+	}
+
+	public boolean isThreadSafe() {
+		return false;
 	}
 
 	public String toString() {
 		return name;
 	}
-
 }

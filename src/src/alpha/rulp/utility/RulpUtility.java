@@ -30,6 +30,7 @@ import alpha.rulp.lang.IRFloat;
 import alpha.rulp.lang.IRInstance;
 import alpha.rulp.lang.IRInteger;
 import alpha.rulp.lang.IRList;
+import alpha.rulp.lang.IRLong;
 import alpha.rulp.lang.IRNative;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.IRString;
@@ -75,6 +76,10 @@ public class RulpUtility {
 
 			case INT:
 				sb.append(((IRInteger) obj).asInteger());
+				break;
+
+			case LONG:
+				sb.append(((IRLong) obj).asLong());
 				break;
 
 			case FLOAT:
@@ -377,6 +382,15 @@ public class RulpUtility {
 		return (IRList) obj;
 	}
 
+	public static IRLong asLong(IRObject obj) throws RException {
+
+		if (obj.getType() != RType.LONG) {
+			throw new RException("Can't convert to long: " + obj);
+		}
+
+		return (IRLong) obj;
+	}
+
 	public static IRMacro asMacro(IRObject obj) throws RException {
 
 		if (obj.getType() != RType.MACRO) {
@@ -452,6 +466,14 @@ public class RulpUtility {
 			return true;
 		}
 
+		if (a == null) {
+			return b == O_Nil;
+		}
+
+		if (b == null) {
+			return a == O_Nil;
+		}
+
 		if (a.getType() != b.getType()) {
 			return false;
 		}
@@ -474,6 +496,10 @@ public class RulpUtility {
 
 		case INT:
 			rc = ((IRInteger) a).asInteger() == ((IRInteger) b).asInteger();
+			break;
+
+		case LONG:
+			rc = ((IRLong) a).asLong() == ((IRLong) b).asLong();
 			break;
 
 		case NIL:

@@ -34,4 +34,7 @@ public class XRFactorSizeOfList extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createInteger(RulpUtility.asList(interpreter.compute(frame, args.get(1))).size());
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -21,6 +21,7 @@ import alpha.rulp.runtime.IRVar;
 import alpha.rulp.utility.RulpFactory;
 import alpha.rulp.utility.RulpUtility;
 import alpha.rulp.utility.StringUtil;
+
 public class XRFactorStrMatch extends AbsRFactorAdapter implements IRFactor {
 
 	public XRFactorStrMatch(String factorName) {
@@ -69,4 +70,7 @@ public class XRFactorStrMatch extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createBoolean(rc);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -39,4 +39,7 @@ public class XRFactorEqual extends AbsRFactorAdapter implements IRFactor {
 		return RulpUtility.equal(a, b) ? O_True : O_False;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

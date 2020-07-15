@@ -40,4 +40,8 @@ public class XRFactorBoolAnd extends AbsRFactorAdapter implements IRFactor {
 
 		return O_True;
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -18,6 +18,7 @@ import alpha.rulp.runtime.IRFactor;
 import alpha.rulp.runtime.IRFrame;
 import alpha.rulp.runtime.IRInterpreter;
 import alpha.rulp.utility.RulpUtility;
+
 public class XRFactorGetErrValue extends AbsRFactorAdapter implements IRFactor {
 
 	public XRFactorGetErrValue(String factorName) {
@@ -35,4 +36,7 @@ public class XRFactorGetErrValue extends AbsRFactorAdapter implements IRFactor {
 		return value == null ? O_Nil : value;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -21,6 +21,7 @@ import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
 import alpha.rulp.runtime.IRFrame;
 import alpha.rulp.runtime.IRFrameEntry;
+import alpha.rulp.runtime.IRThreadContext;
 import alpha.rulp.runtime.IRVar;
 import alpha.rulp.utility.RulpFactory;
 
@@ -100,12 +101,15 @@ public class XRFrame implements IRFrame {
 
 	protected int stackLevel;
 
-	public XRFrame(IRFrame parentFrame, String name, int frameId, int stackLevel) {
+	private IRThreadContext threadContext;
+
+	public XRFrame(IRFrame parentFrame, String name, int frameId, int stackLevel, IRThreadContext threadContext) {
 		super();
 		this.parentFrame = parentFrame;
 		this.stackLevel = stackLevel;
 		this.frameName = name;
 		this.frameId = frameId;
+		this.threadContext = threadContext;
 	}
 
 	protected IRFrameEntry _findLocalEntry(String name) {
@@ -142,7 +146,7 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public IRFrameEntry getEntry(String name) throws RException {
+	public synchronized IRFrameEntry getEntry(String name) throws RException {
 
 		EntryNode entryNode = _findNode(name);
 		if (entryNode == null) {
@@ -181,7 +185,7 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public IRObject getObject(String name) throws RException {
+	public synchronized IRObject getObject(String name) throws RException {
 		IRFrameEntry entry = getEntry(name);
 		return entry == null ? null : entry.getObject();
 	}
@@ -192,7 +196,12 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public Iterator<IRFrameEntry> listEntries() {
+	public IRThreadContext getThreadContext() {
+		return threadContext;
+	}
+
+	@Override
+	public synchronized Iterator<IRFrameEntry> listEntries() {
 
 		if (entryMap == null || entryMap.isEmpty()) {
 			return Collections.<IRFrameEntry>emptyList().iterator();
@@ -216,7 +225,7 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public IRFrameEntry removeEntry(String name) throws RException {
+	public synchronized IRFrameEntry removeEntry(String name) throws RException {
 
 		IRFrameEntry entry = entryMap.remove(name);
 
@@ -232,7 +241,7 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public IRFrameEntry setEntry(String name, IRObject obj) throws RException {
+	public synchronized IRFrameEntry setEntry(String name, IRObject obj) throws RException {
 
 		IRFrameEntry localEntry = _findLocalEntry(name);
 
@@ -259,7 +268,7 @@ public class XRFrame implements IRFrame {
 	}
 
 	@Override
-	public void setEntryAliasName(IRFrameEntry entry, String aliasName) throws RException {
+	public synchronized void setEntryAliasName(IRFrameEntry entry, String aliasName) throws RException {
 
 		// Check alias name
 		IRFrameEntry localEntry = _findLocalEntry(aliasName);
@@ -275,7 +284,13 @@ public class XRFrame implements IRFrame {
 		((XRFrameEntry) entry).addAliasName(aliasName);
 	}
 
+	@Override
+	public void setThreadContext(IRThreadContext context) {
+		this.threadContext = context;
+	}
+
 	public String toString() {
 		return "Frame#" + frameName + "-" + frameId;
 	}
+
 }

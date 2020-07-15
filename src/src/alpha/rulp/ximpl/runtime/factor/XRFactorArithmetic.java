@@ -62,9 +62,8 @@ public class XRFactorArithmetic extends AbsRFactorAdapter implements IRFactor {
 			return RulpFactory.createFloat(av);
 		}
 
-		case INT:
+		case INT: {
 
-		{
 			int av = MathUtility.toInt(a);
 			int bv = MathUtility.toInt(b);
 
@@ -86,6 +85,31 @@ public class XRFactorArithmetic extends AbsRFactorAdapter implements IRFactor {
 			}
 
 			return RulpFactory.createInteger(av);
+		}
+
+		case LONG: {
+
+			long av = MathUtility.toLong(a);
+			long bv = MathUtility.toLong(b);
+
+			switch (op) {
+			case ADD:
+				av += bv;
+				break;
+			case BY:
+				av *= bv;
+				break;
+			case SUB:
+				av -= bv;
+				break;
+			case DIV:
+				av /= bv;
+				break;
+			default:
+				throw new RException(String.format("Not support op: %s", op));
+			}
+
+			return RulpFactory.createLong(av);
 		}
 
 		default:
@@ -119,4 +143,7 @@ public class XRFactorArithmetic extends AbsRFactorAdapter implements IRFactor {
 		return rst;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

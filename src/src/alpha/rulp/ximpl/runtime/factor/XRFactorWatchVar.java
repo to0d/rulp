@@ -21,6 +21,7 @@ import alpha.rulp.runtime.IRVar;
 import alpha.rulp.runtime.IRVarListener;
 import alpha.rulp.utility.RulpFactory;
 import alpha.rulp.utility.RulpUtility;
+import alpha.rulp.ximpl.runtime.RuntimeUtils;
 
 public class XRFactorWatchVar extends AbsRFactorAdapter implements IRFactor {
 
@@ -54,13 +55,16 @@ public class XRFactorWatchVar extends AbsRFactorAdapter implements IRFactor {
 
 			@Override
 			public void valueChanged(IRVar var, IRObject oldVal, IRObject newVal) throws RException {
-
 				IRList newArgs = RulpFactory.createList(fun, var, oldVal, newVal);
-				fun.compute(newArgs, interpreter, frame);
+				RuntimeUtils.computeCallable(fun, newArgs, interpreter, frame);
 			}
 		});
 
 		return fun;
+	}
+
+	public boolean isThreadSafe() {
+		return true;
 	}
 
 }

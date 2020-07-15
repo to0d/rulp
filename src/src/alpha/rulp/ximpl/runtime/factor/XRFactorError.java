@@ -80,4 +80,8 @@ public class XRFactorError extends AbsRFactorAdapter implements IRFactor {
 		}
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 }

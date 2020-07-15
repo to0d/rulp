@@ -27,12 +27,16 @@ public class XRFactorReturn extends AbsRFactorAdapter implements IRFactor {
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
-		
+
 		int size = args.size();
 		if (size > 2) {
 			throw new RException("Invalid parameters: " + args);
 		}
 
 		throw new RReturn(this, frame, size == 1 ? O_Nan : interpreter.compute(frame, args.get(1)));
+	}
+
+	public boolean isThreadSafe() {
+		return true;
 	}
 }

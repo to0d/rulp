@@ -65,4 +65,8 @@ public class XRFactorSetq extends AbsRFactorAdapter implements IRFactor {
 		return setVar(args.get(1), args.get(2), interpreter, frame);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 }

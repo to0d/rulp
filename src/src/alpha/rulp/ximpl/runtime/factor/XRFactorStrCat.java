@@ -26,7 +26,7 @@ public class XRFactorStrCat extends AbsRFactorAdapter implements IRFactor {
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
-		
+
 		StringBuffer sb = new StringBuffer();
 		for (int i = 1; i < args.size(); ++i) {
 			sb.append(RulpUtility.asString(interpreter.compute(frame, args.get(i))).asString());
@@ -35,4 +35,7 @@ public class XRFactorStrCat extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createString(sb.toString());
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

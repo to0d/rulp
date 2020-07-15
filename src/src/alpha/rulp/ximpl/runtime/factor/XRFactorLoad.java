@@ -51,8 +51,11 @@ public class XRFactorLoad extends AbsRFactorAdapter implements IRFactor {
 
 		List<IRObject> rst = RulpUtility.load(interpreter, path, charset);
 		loadedFilePaths.add(path);
-		
+
 		return RulpFactory.createList(rst);
 	}
 
+	public boolean isThreadSafe() {
+		return false;
+	}
 }

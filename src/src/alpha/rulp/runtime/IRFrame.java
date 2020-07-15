@@ -38,4 +38,8 @@ public interface IRFrame {
 
 	public void setEntryAliasName(IRFrameEntry entry, String aliasName) throws RException;
 
+	public void setThreadContext(IRThreadContext context);
+
+	public IRThreadContext getThreadContext();
+
 }

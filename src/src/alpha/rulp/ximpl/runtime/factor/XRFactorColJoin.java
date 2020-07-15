@@ -34,8 +34,7 @@ public class XRFactorColJoin extends AbsRFactorAdapter implements IRFactor {
 		}
 
 		XRCollection joinCol = null;
-		
-		
+
 		for (int i = 1; i < args.size(); ++i) {
 
 			IRObject arg = interpreter.compute(frame, args.get(i));
@@ -60,4 +59,7 @@ public class XRFactorColJoin extends AbsRFactorAdapter implements IRFactor {
 		return joinCol.toList();
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -36,8 +36,13 @@ public abstract class AbsRFactorAdapter implements IRFactor {
 		return RType.FACTOR;
 	}
 
+	public boolean isThreadSafe() {
+		return false;
+	}
+
 	@Override
 	public String toString() {
 		return factorName;
 	}
+
 }

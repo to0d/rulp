@@ -33,5 +33,4 @@ public interface IRInterpreter {
 	public void out(String line);
 
 	public void setOutput(IROut out);
-
 }

@@ -36,4 +36,7 @@ public class XRFactorGet extends AbsRFactorAdapter implements IRFactor {
 		return list.get(idx);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -148,4 +148,7 @@ public class XRFactorLs extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createList(list);
 	}
 
+	public boolean isThreadSafe() {
+		return false;
+	}
 }

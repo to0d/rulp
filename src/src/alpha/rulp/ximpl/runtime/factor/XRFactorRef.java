@@ -46,4 +46,8 @@ public class XRFactorRef extends AbsRFactorAdapter implements IRFactor {
 		return var;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 }

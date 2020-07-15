@@ -31,6 +31,10 @@ public class XRFactorTry extends AbsRFactorAdapter implements IRFactor {
 		super(factorName);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 	public void defineHandleCase(IRFrame tryFrame, IRExpr handleExpression) throws RException {
 
 		// (e1 (action1) (action2))

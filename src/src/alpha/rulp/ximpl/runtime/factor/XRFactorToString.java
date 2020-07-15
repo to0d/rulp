@@ -19,20 +19,23 @@ import alpha.rulp.utility.RulpFactory;
 import alpha.rulp.utility.RulpUtility;
 
 public class XRFactorToString extends AbsRFactorAdapter implements IRFactor {
-
 	public XRFactorToString(String factorName) {
 		super(factorName);
 	}
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
-	
+
 		if (args.size() != 2) {
 			throw new RException("Invalid parameters: " + args);
 		}
 
 		IRObject obj = interpreter.compute(frame, args.get(1));
 		return RulpFactory.createString(RulpUtility.toString(obj));
+	}
+
+	public boolean isThreadSafe() {
+		return true;
 	}
 
 }

@@ -74,4 +74,7 @@ public class XRFactorDate extends AbsRFactorAdapter implements IRFactor {
 		}
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

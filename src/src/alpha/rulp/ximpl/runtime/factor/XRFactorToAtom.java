@@ -18,7 +18,6 @@ import alpha.rulp.runtime.IRInterpreter;
 import alpha.rulp.utility.RulpFactory;
 
 public class XRFactorToAtom extends AbsRFactorAdapter implements IRFactor {
-
 	public XRFactorToAtom(String factorName) {
 		super(factorName);
 	}
@@ -31,6 +30,10 @@ public class XRFactorToAtom extends AbsRFactorAdapter implements IRFactor {
 		}
 
 		return RulpFactory.createAtom(interpreter.compute(frame, args.get(1)).asString());
+	}
+
+	public boolean isThreadSafe() {
+		return true;
 	}
 
 }

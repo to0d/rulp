@@ -43,4 +43,7 @@ public class XRFactorIf extends AbsRFactorAdapter implements IRFactor {
 		return interpreter.compute(frame, rstClause);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

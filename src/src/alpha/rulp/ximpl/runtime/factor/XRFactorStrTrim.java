@@ -27,7 +27,7 @@ public class XRFactorStrTrim extends AbsRFactorAdapter implements IRFactor {
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
-		
+
 		if (args.size() != 2) {
 			throw new RException("Invalid parameters: " + args);
 		}
@@ -41,4 +41,7 @@ public class XRFactorStrTrim extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createString(str.trim());
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

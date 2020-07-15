@@ -13,8 +13,9 @@ import alpha.rulp.lang.IRList;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
 
-public interface IRCallable {
+public interface IRCallable extends IRObject {
 
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException;
-
+	
+	public boolean isThreadSafe();
 }

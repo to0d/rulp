@@ -107,4 +107,8 @@ public class XRFactorForeach extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createList(rstList);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 }

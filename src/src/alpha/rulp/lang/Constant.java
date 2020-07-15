@@ -43,6 +43,8 @@ public interface Constant {
 
 	String A_LIST = "LIST";
 
+	String A_LONG = "LONG";
+
 	String A_MACRO = "MACRO";
 
 	String A_NAN = "nan";
@@ -98,6 +100,8 @@ public interface Constant {
 	String F_DELETE = "delete";
 
 	String F_DO = "do";
+
+	String F_DO_Parallel= "do-p";
 
 	String F_E_ERROR = "error";
 
@@ -183,6 +187,10 @@ public interface Constant {
 
 	String F_SYS_GC = "sys-gc";
 
+	String F_SYS_TIME = "sys-time";
+	
+	String F_T_SLEEP = "sleep";
+
 	String F_TO = "to";
 
 	String F_TO_ATOM = "to-atom";
@@ -226,6 +234,8 @@ public interface Constant {
 	IRAtom T_Int = RulpFactory.createAtom(A_INTEGER);
 
 	IRAtom T_List = RulpFactory.createAtom(A_LIST);
+
+	IRAtom T_Long = RulpFactory.createAtom(A_LONG);
 
 	IRAtom T_Macro = RulpFactory.createAtom(A_MACRO);
 

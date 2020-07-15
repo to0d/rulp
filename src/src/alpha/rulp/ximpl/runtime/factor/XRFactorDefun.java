@@ -161,4 +161,8 @@ public class XRFactorDefun extends AbsRFactorAdapter implements IRFactor {
 		funList.addFunc(newFun);
 		return newFun;
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -12,6 +12,7 @@ package alpha.rulp.utility;
 import alpha.rulp.lang.IRBoolean;
 import alpha.rulp.lang.IRFloat;
 import alpha.rulp.lang.IRInteger;
+import alpha.rulp.lang.IRLong;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
 import alpha.rulp.lang.RType;
@@ -21,16 +22,25 @@ public class MathUtility {
 	static RType calRstType[][] = new RType[RType.TYPE_NUM][RType.TYPE_NUM];
 
 	static {
+		calRstType[RType.NIL.getIndex()][RType.NIL.getIndex()] = RType.NIL;
+
 		calRstType[RType.INT.getIndex()][RType.INT.getIndex()] = RType.INT;
-		calRstType[RType.FLOAT.getIndex()][RType.INT.getIndex()] = RType.FLOAT;
 		calRstType[RType.INT.getIndex()][RType.FLOAT.getIndex()] = RType.FLOAT;
+		calRstType[RType.INT.getIndex()][RType.LONG.getIndex()] = RType.LONG;
+
 		calRstType[RType.FLOAT.getIndex()][RType.FLOAT.getIndex()] = RType.FLOAT;
+		calRstType[RType.FLOAT.getIndex()][RType.INT.getIndex()] = RType.FLOAT;
+		calRstType[RType.FLOAT.getIndex()][RType.LONG.getIndex()] = RType.FLOAT;
+		
+		calRstType[RType.LONG.getIndex()][RType.LONG.getIndex()] = RType.LONG;
+		calRstType[RType.LONG.getIndex()][RType.INT.getIndex()] = RType.LONG;
+		calRstType[RType.LONG.getIndex()][RType.FLOAT.getIndex()] = RType.FLOAT;
+
+		calRstType[RType.BOOL.getIndex()][RType.BOOL.getIndex()] = RType.BOOL;
 
 		calRstType[RType.EXPR.getIndex()][RType.EXPR.getIndex()] = RType.EXPR;
 		calRstType[RType.ATOM.getIndex()][RType.ATOM.getIndex()] = RType.ATOM;
 
-		calRstType[RType.NIL.getIndex()][RType.NIL.getIndex()] = RType.NIL;
-		calRstType[RType.BOOL.getIndex()][RType.BOOL.getIndex()] = RType.BOOL;
 	}
 
 	public static RType getConvertType(RType a, RType b) {
@@ -46,9 +56,12 @@ public class MathUtility {
 			return ((IRBoolean) a).asBoolean();
 
 		case FLOAT:
-		case INT:
 		case EXPR:
 			return true;
+
+		case INT:
+		case LONG:
+			return toLong(a) != 0;
 
 		default:
 			throw new RException(String.format("Not support type: %s", a.toString()));
@@ -61,6 +74,8 @@ public class MathUtility {
 			return ((IRFloat) a).asFloat();
 		case INT:
 			return ((IRInteger) a).asInteger();
+		case LONG:
+			return (float) ((IRLong) a).asLong();
 		default:
 			throw new RException(String.format("Not support type: %s", a.toString()));
 		}
@@ -72,9 +87,23 @@ public class MathUtility {
 			return (int) ((IRFloat) a).asFloat();
 		case INT:
 			return ((IRInteger) a).asInteger();
+		case LONG:
+			return (int) ((IRLong) a).asLong();
 		default:
 			throw new RException(String.format("Not support type: %s", a.toString()));
 		}
 	}
 
+	public static long toLong(IRObject a) throws RException {
+		switch (a.getType()) {
+		case FLOAT:
+			return (long) ((IRFloat) a).asFloat();
+		case INT:
+			return ((IRInteger) a).asInteger();
+		case LONG:
+			return ((IRLong) a).asLong();
+		default:
+			throw new RException(String.format("Not support type: %s", a.toString()));
+		}
+	}
 }

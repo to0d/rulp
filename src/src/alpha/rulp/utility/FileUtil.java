@@ -15,11 +15,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class FileUtil {
-	
+
 	public static boolean isExistFile(String path) {
 
 		File file = new File(path);
@@ -72,5 +74,33 @@ public class FileUtil {
 		}
 
 		return lineList;
+	}
+
+	public static void saveTxtFile(String outPath, Collection<String> content) throws IOException {
+
+		try (PrintStream out = new PrintStream(outPath)) {
+			for (String line : content) {
+				if (line != null) {
+					out.println(line);
+				}
+			}
+		}
+
+	}
+
+	public static void saveTxtFile(String outPath, Collection<String> content, String charset) throws IOException {
+
+		if (charset == null) {
+			saveTxtFile(outPath, content);
+			return;
+		}
+
+		try (PrintStream out = new PrintStream(outPath, charset)) {
+			for (String line : content) {
+				if (line != null) {
+					out.println(line);
+				}
+			}
+		}
 	}
 }

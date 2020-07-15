@@ -51,4 +51,8 @@ public class XRFactorLet extends AbsRFactorAdapter implements IRFactor {
 
 		return interpreter.compute(letFrame, args.get(2));
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -33,4 +33,8 @@ public class XRFactorSystemGC extends AbsRFactorAdapter implements IRFactor {
 		return O_Nil;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 }

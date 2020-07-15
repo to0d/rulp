@@ -75,4 +75,8 @@ public class XRFactorOutToFile extends AbsRFactorAdapter implements IRFactor {
 			interpreter.setOutput(oldOut);// recovery old out
 		}
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

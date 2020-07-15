@@ -134,6 +134,10 @@ public class XRMacro implements IRMacro {
 		return RType.MACRO;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
+
 	@Override
 	public String toString() {
 		return macroName;

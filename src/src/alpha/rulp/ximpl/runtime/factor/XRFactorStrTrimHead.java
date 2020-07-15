@@ -42,4 +42,7 @@ public class XRFactorStrTrimHead extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createString(StringUtil.trimHead(str, ' '));
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

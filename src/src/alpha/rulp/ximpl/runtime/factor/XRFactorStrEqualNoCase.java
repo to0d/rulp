@@ -27,7 +27,7 @@ public class XRFactorStrEqualNoCase extends AbsRFactorAdapter implements IRFacto
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
-		
+
 		if (args.size() != 3) {
 			throw new RException("Invalid parameters: " + args);
 		}
@@ -38,4 +38,7 @@ public class XRFactorStrEqualNoCase extends AbsRFactorAdapter implements IRFacto
 		return a.equalsIgnoreCase(b) ? O_True : O_False;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

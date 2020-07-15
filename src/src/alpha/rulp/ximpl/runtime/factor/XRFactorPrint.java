@@ -41,4 +41,8 @@ public class XRFactorPrint extends AbsRFactorAdapter implements IRFactor {
 
 		return rst;
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

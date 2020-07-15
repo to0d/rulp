@@ -18,6 +18,7 @@ import alpha.rulp.runtime.IRFactor;
 import alpha.rulp.runtime.IRFrame;
 import alpha.rulp.runtime.IRInterpreter;
 import alpha.rulp.runtime.IRIterator;
+import alpha.rulp.ximpl.runtime.RuntimeUtils;
 
 public class XRFactorDo extends AbsRFactorAdapter implements IRFactor {
 
@@ -31,10 +32,13 @@ public class XRFactorDo extends AbsRFactorAdapter implements IRFactor {
 		IRIterator<? extends IRObject> iter = args.listIterator(1);
 		IRObject rst = O_Nil;
 		while (iter.hasNext()) {
-			rst = interpreter.compute(frame, iter.next());
+			rst = RuntimeUtils.compute(iter.next(), interpreter, frame);
 		}
 
 		return rst;
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

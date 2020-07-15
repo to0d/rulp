@@ -22,6 +22,7 @@ import static alpha.rulp.lang.Constant.F_DEFUN;
 import static alpha.rulp.lang.Constant.F_DEFVAR;
 import static alpha.rulp.lang.Constant.F_DELETE;
 import static alpha.rulp.lang.Constant.F_DO;
+import static alpha.rulp.lang.Constant.F_DO_Parallel;
 import static alpha.rulp.lang.Constant.F_EQUAL;
 import static alpha.rulp.lang.Constant.F_E_ERROR;
 import static alpha.rulp.lang.Constant.F_E_GET_ERR_VALUE;
@@ -59,9 +60,11 @@ import static alpha.rulp.lang.Constant.F_STR_TRIM;
 import static alpha.rulp.lang.Constant.F_STR_TRIM_HEAD;
 import static alpha.rulp.lang.Constant.F_STR_TRIM_TAIL;
 import static alpha.rulp.lang.Constant.F_SYS_GC;
+import static alpha.rulp.lang.Constant.F_SYS_TIME;
 import static alpha.rulp.lang.Constant.F_TO_ATOM;
 import static alpha.rulp.lang.Constant.F_TO_STRING;
 import static alpha.rulp.lang.Constant.F_TYPE_OF;
+import static alpha.rulp.lang.Constant.F_T_SLEEP;
 import static alpha.rulp.lang.Constant.F_UNION;
 import static alpha.rulp.lang.Constant.F_WATCH_VAR;
 import static alpha.rulp.lang.Constant.F_WHEN;
@@ -136,12 +139,15 @@ import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrim;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrimHead;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrimTail;
 import alpha.rulp.ximpl.runtime.factor.XRFactorSystemGC;
+import alpha.rulp.ximpl.runtime.factor.XRFactorSystemTime;
 import alpha.rulp.ximpl.runtime.factor.XRFactorToAtom;
 import alpha.rulp.ximpl.runtime.factor.XRFactorToString;
 import alpha.rulp.ximpl.runtime.factor.XRFactorTry;
 import alpha.rulp.ximpl.runtime.factor.XRFactorTypeOf;
 import alpha.rulp.ximpl.runtime.factor.XRFactorWatchVar;
 import alpha.rulp.ximpl.runtime.factor.XRFactorWhen;
+import alpha.rulp.ximpl.thread.factor.XRFactorDoParallel;
+import alpha.rulp.ximpl.thread.factor.XRFactorSleep;
 
 public class XRLoadBaseObject implements IRObjectLoader {
 
@@ -245,12 +251,17 @@ public class XRLoadBaseObject implements IRObjectLoader {
 		RulpUtility.addFrameObject(sysFrame, new XRFactorColUnion(F_UNION));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorForeach(F_FOREACH));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorGet(F_GET));
+		
+		// Thread
+		RulpUtility.addFrameObject(sysFrame, new XRFactorSleep(F_T_SLEEP));
+		RulpUtility.addFrameObject(sysFrame, new XRFactorDoParallel(F_DO_Parallel));
 
 		// Time
 		RulpUtility.addFrameObject(sysFrame, new XRFactorDate(F_DATE));
 
 		// System
 		RulpUtility.addFrameObject(sysFrame, new XRFactorSystemGC(F_SYS_GC));
+		RulpUtility.addFrameObject(sysFrame, new XRFactorSystemTime(F_SYS_TIME));
 
 		// Load base script
 		RulpUtility.loadFromJar(interpreter, sysFrame, "alpha/resource/base.rulp", "utf-8");

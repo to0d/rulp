@@ -48,4 +48,8 @@ public class XRFactorLambda extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createFunctionLambda(paraNames, null, RulpFactory.createList(args.listIterator(2)),
 				RulpFactory.createdChildFrame(frame, "LAMBDA"));
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

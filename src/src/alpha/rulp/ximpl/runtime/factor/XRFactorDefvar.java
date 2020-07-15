@@ -65,4 +65,8 @@ public class XRFactorDefvar extends AbsRFactorAdapter implements IRFactor {
 
 		return rtVar ? var : val;
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

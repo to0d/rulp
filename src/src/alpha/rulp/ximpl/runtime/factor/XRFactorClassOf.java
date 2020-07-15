@@ -55,4 +55,8 @@ public class XRFactorClassOf extends AbsRFactorAdapter implements IRFactor {
 			return O_Nan;
 		}
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

@@ -105,6 +105,33 @@ public class XRFactorComparison extends AbsRFactorAdapter implements IRFactor {
 			}
 			break;
 		}
+
+		case LONG: {
+			long av = MathUtility.toLong(a);
+			long bv = MathUtility.toLong(b);
+
+			switch (op) {
+			case Equal:
+				rc = (av == bv);
+				break;
+			case Bigger:
+				rc = (av > bv);
+				break;
+			case BiggerOrEqual:
+				rc = (av >= bv);
+				break;
+			case Smaller:
+				rc = (av < bv);
+				break;
+			case SmallerOrEqual:
+				rc = (av <= bv);
+				break;
+			default:
+				throw new RException(String.format("Not support op: %s", op));
+			}
+			break;
+		}
+
 		case NIL: {
 			if (op != ComparisonType.Equal) {
 				throw new RException(String.format("Not support op: %s", op));
@@ -177,4 +204,7 @@ public class XRFactorComparison extends AbsRFactorAdapter implements IRFactor {
 		return RulpFactory.createBoolean(compare(op, a, b));
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

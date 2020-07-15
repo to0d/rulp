@@ -28,4 +28,7 @@ public class XRFactorContinue extends AbsRFactorAdapter implements IRFactor {
 		throw new RContinue(this, frame);
 	}
 
+	public boolean isThreadSafe() {
+		return true;
+	}
 }

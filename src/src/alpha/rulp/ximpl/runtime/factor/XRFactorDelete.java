@@ -51,4 +51,8 @@ public class XRFactorDelete extends AbsRFactorAdapter implements IRFactor {
 
 		return obj;
 	}
+
+	public boolean isThreadSafe() {
+		return true;
+	}
 }
