@@ -104,7 +104,7 @@ public class RulpUtility {
 
 			case STRING:
 				sb.append("\"");
-				sb.append(((IRString) obj).asString());
+				sb.append(StringUtil.addEscapeString(((IRString) obj).asString()));
 				sb.append("\"");
 				break;
 
@@ -174,9 +174,8 @@ public class RulpUtility {
 			}
 
 			switch (obj.getType()) {
-
 			case STRING:
-				sb.append(((IRString) obj).asString());
+				sb.append(StringUtil.removeEscapeString(((IRString) obj).asString()));
 				break;
 
 			default:

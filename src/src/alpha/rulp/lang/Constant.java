@@ -101,7 +101,7 @@ public interface Constant {
 
 	String F_DO = "do";
 
-	String F_DO_Parallel= "do-p";
+	String F_DO_Parallel = "do-p";
 
 	String F_E_ERROR = "error";
 
@@ -183,12 +183,14 @@ public interface Constant {
 
 	String F_STR_TRIM_TAIL = "str-trim-tail";
 
+	String F_STR_START_WITH = "str-start-with";
+
 	String F_STRCAT = "strcat";
 
 	String F_SYS_GC = "sys-gc";
 
 	String F_SYS_TIME = "sys-time";
-	
+
 	String F_T_SLEEP = "sleep";
 
 	String F_TO = "to";
@@ -200,6 +202,10 @@ public interface Constant {
 	String F_TYPE_OF = "type-of";
 
 	String F_UNION = "union";
+
+	String F_VALUE_OF = "value-of";
+
+	String F_VALUE_TYPE_OF = "value-type-of";
 
 	String F_WATCH_VAR = "watch-var";
 

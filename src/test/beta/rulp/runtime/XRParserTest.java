@@ -17,6 +17,16 @@ import alpha.rulp.utility.RulpUtility;
 
 public class XRParserTest extends RulpTestBase {
 
+	void _test_parse_error(String input, String expect_msg) {
+
+		try {
+			_getParser().parse(input);
+			fail("expect fail");
+		} catch (RException e) {
+			assertEquals(expect_msg, e.toString());
+		}
+	}
+
 	void _test_parse_line(String line) {
 		_test_parse_line(line, line, true);
 	}
@@ -133,15 +143,6 @@ public class XRParserTest extends RulpTestBase {
 	}
 
 	@Test
-	public void test_5_list() {
-
-		_setup();
-
-		_test_parse_line("'(a b c)");
-		_test_parse_line("' (a b c)", "'(a b c)");
-	}
-
-	@Test
 	public void test_5_expr() {
 
 		_setup();
@@ -171,6 +172,15 @@ public class XRParserTest extends RulpTestBase {
 		_test_parse_line("(join (query a b ?) (query ? b d))");
 		_test_parse_line("(defmacro ?x (?Team) \"a dest\" (join (x AS400 hasChild ?) (y ?Team termAttrOf ?)))");
 
+	}
+
+	@Test
+	public void test_5_list() {
+
+		_setup();
+
+		_test_parse_line("'(a b c)");
+		_test_parse_line("' (a b c)", "'(a b c)");
 	}
 
 	@Test
@@ -215,9 +225,17 @@ public class XRParserTest extends RulpTestBase {
 	}
 
 	@Test
+	public void test_9_special_escape_string() {
+		_setup();
+		_test_parse_line("\"\\\"abc\"");
+	}
+
+	@Test
 	public void test_9_special_string() {
 
 		_setup();
+		_test_parse_line("(doSendCommand \"EVAL %%TST.\\\\\\\"%^&*~!()<>?./,{}||-=var7\\\\\\\":s 5\")");
+		_test_parse_line("(expectSimpleResult \"'hello'\")");
 		_test_parse_line("(defvar ?file-separatorChar \";\")");
 	}
 
@@ -226,14 +244,16 @@ public class XRParserTest extends RulpTestBase {
 
 		_setup();
 		_test_parse_line("(defvar ?file-separatorChar \"/\")");
-		_test_parse_line("(defvar ?file-separatorChar \"\\\")");
+		_test_parse_line("(defvar ?file-separatorChar \"\\\\\")");
 	}
 
 	@Test
 	public void test_a_error() {
 
 		_setup();
-		_test_parse_line_error("(a b", "Bad Syntax at line 0: token=[S:1:0:1:(], line=(a b");
+		_test_parse_error("(a b (x y z)", "Bad Syntax at line 0: miss match '(' found in position 0, (a b (x y z)");
+		_test_parse_error("(a b c", "Bad Syntax at line 0: miss match '(' found in position 0, (a b c");
+		_test_parse_error("(a b) (x", "Bad Syntax at line 0: miss match '(' found in position 6, (x");
 	}
 
 	@Test
@@ -278,4 +298,5 @@ public class XRParserTest extends RulpTestBase {
 		_test_parse_line("*T*-2");
 		_test_parse_line("(3.2Íò)");
 	}
+
 }

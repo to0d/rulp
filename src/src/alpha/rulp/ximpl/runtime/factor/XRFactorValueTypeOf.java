@@ -8,38 +8,29 @@
 /* redistribute it under certain conditions.         */
 
 package alpha.rulp.ximpl.runtime.factor;
-import static alpha.rulp.lang.Constant.O_Nil;
 
 import alpha.rulp.lang.IRList;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.RException;
+import alpha.rulp.lang.RType;
 import alpha.rulp.runtime.IRFactor;
 import alpha.rulp.runtime.IRFrame;
 import alpha.rulp.runtime.IRInterpreter;
-import alpha.rulp.runtime.IRIterator;
-import alpha.rulp.utility.RulpUtility;
 
-public class XRFactorPrint extends AbsRFactorAdapter implements IRFactor {
+public class XRFactorValueTypeOf extends AbsRFactorAdapter implements IRFactor {
 
-	public XRFactorPrint(String factorName) {
+	public XRFactorValueTypeOf(String factorName) {
 		super(factorName);
 	}
 
 	@Override
 	public IRObject compute(IRList args, IRInterpreter interpreter, IRFrame frame) throws RException {
 
-		if (args.size() < 2) {
+		if (args.size() != 2) {
 			throw new RException("Invalid parameters: " + args);
 		}
 
-		IRObject rst = null;
-		IRIterator<? extends IRObject> iter = args.listIterator(1);
-		while (iter.hasNext()) {
-			rst = interpreter.compute(frame, iter.next());
-			interpreter.out(RulpUtility.toStringPrint(rst));
-		}
-
-		return O_Nil;
+		return RType.toObject(interpreter.compute(frame, args.get(1)).getType());
 	}
 
 	public boolean isThreadSafe() {

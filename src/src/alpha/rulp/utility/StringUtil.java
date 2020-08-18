@@ -589,9 +589,6 @@ public class StringUtil {
 
 	}
 
-	
-
-	
 	public static String getSingleMatchString(String mode, String content) throws RException {
 
 		ArrayList<String> values = new ArrayList<>();
@@ -681,61 +678,101 @@ public class StringUtil {
 
 	}
 
+	public static boolean isEscapeChar(char c) {
+
+		switch (c) {
+		case '\\':
+		case '\n':
+		case '"':
+			return true;
+		}
+
+		return false;
+	}
+
+	public static String addEscapeString(String str) {
+
+		StringBuffer sb = null;
+		int size = str.length();
+
+		for (int i = 0; i < size; ++i) {
+
+			char c = str.charAt(i);
+			if (isEscapeChar(c)) {
+				if (sb == null) {
+					sb = new StringBuffer();
+					if (i > 0) {
+						sb.append(str.substring(0, i));
+					}
+				}
+				sb.append('\\');
+			}
+
+			if (sb != null) {
+				sb.append(c);
+			}
+		}
+
+		return sb == null ? str : sb.toString();
+	}
+
 	public static String removeEscapeString(String str) {
 
 		if (str == null) {
 			return null;
 		}
 
-		int size = str.length();
-		if (size == 0) {
-			return str;
-		}
-
-		int fromIndex = 0;
 		StringBuffer sb = null;
+		int size = str.length();
 
-		while (fromIndex < size) {
+		NEXT: for (int i = 0; i < size; ++i) {
 
-			int pos = str.indexOf('\\', fromIndex);
+			char c = str.charAt(i);
+			if (c == '\\' && (i + 1) < size) {
+				char c2 = str.charAt(i + 1);
+				switch (c2) {
+				case 'n':
+					c2 = '\n';
+					break;
 
-			// No escape character found
-			if (pos == -1 || pos == (size - 1)) {
-				break;
+				case '\\':
+					c2 = '\\';
+					break;
+
+				case '"':
+					c2 = '"';
+					break;
+
+				default:
+
+					if (sb != null) {
+						sb.append(c);
+						sb.append(c2);
+					}
+
+					++i;
+					continue NEXT;
+				}
+
+				if (sb == null) {
+					sb = new StringBuffer();
+					if (i > 0) {
+						sb.append(str.substring(0, i));
+					}
+				}
+
+				sb.append(c2);
+				++i;
+				
+			} else {
+
+				if (sb != null) {
+					sb.append(c);
+				}
 			}
-
-			if (sb == null) {
-				sb = new StringBuffer();
-			}
-
-			sb.append(str.substring(fromIndex, pos));
-
-			char c = str.charAt(pos + 1);
-			switch (c) {
-			case 'n':
-				c = '\n';
-				break;
-			case '\\': // '\\' ==>'\'
-				break;
-			default: // '\x' ==>'\'
-				break;
-			}
-
-			sb.append(c);
-			fromIndex = pos + 2;
 		}
 
-		if (sb == null) {
-			return str;
-
-		} else {
-
-			if (fromIndex < size) {
-				sb.append(str.substring(fromIndex));
-			}
-
-			return sb.toString();
-		}
+		return sb == null ? str : sb.toString();
 	}
 
 	public static List<String> splitStringByChar(String input, char... s) {

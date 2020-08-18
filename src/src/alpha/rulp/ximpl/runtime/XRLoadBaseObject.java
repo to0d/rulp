@@ -12,7 +12,7 @@ package alpha.rulp.ximpl.runtime;
 import static alpha.rulp.lang.Constant.F_ALIAS;
 import static alpha.rulp.lang.Constant.F_B_AND;
 import static alpha.rulp.lang.Constant.F_B_NOT;
-import static alpha.rulp.lang.Constant.F_B_OR;
+import static alpha.rulp.lang.Constant.*;
 import static alpha.rulp.lang.Constant.F_CLASS_OF;
 import static alpha.rulp.lang.Constant.F_CONTINUE;
 import static alpha.rulp.lang.Constant.F_CREATE;
@@ -66,6 +66,8 @@ import static alpha.rulp.lang.Constant.F_TO_STRING;
 import static alpha.rulp.lang.Constant.F_TYPE_OF;
 import static alpha.rulp.lang.Constant.F_T_SLEEP;
 import static alpha.rulp.lang.Constant.F_UNION;
+import static alpha.rulp.lang.Constant.F_VALUE_OF;
+import static alpha.rulp.lang.Constant.F_VALUE_TYPE_OF;
 import static alpha.rulp.lang.Constant.F_WATCH_VAR;
 import static alpha.rulp.lang.Constant.F_WHEN;
 import static alpha.rulp.lang.Constant.O_False;
@@ -135,6 +137,7 @@ import alpha.rulp.ximpl.runtime.factor.XRFactorStrCat;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrEqual;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrEqualNoCase;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrMatch;
+import alpha.rulp.ximpl.runtime.factor.XRFactorStrStartsWith;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrim;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrimHead;
 import alpha.rulp.ximpl.runtime.factor.XRFactorStrTrimTail;
@@ -144,6 +147,8 @@ import alpha.rulp.ximpl.runtime.factor.XRFactorToAtom;
 import alpha.rulp.ximpl.runtime.factor.XRFactorToString;
 import alpha.rulp.ximpl.runtime.factor.XRFactorTry;
 import alpha.rulp.ximpl.runtime.factor.XRFactorTypeOf;
+import alpha.rulp.ximpl.runtime.factor.XRFactorValueOf;
+import alpha.rulp.ximpl.runtime.factor.XRFactorValueTypeOf;
 import alpha.rulp.ximpl.runtime.factor.XRFactorWatchVar;
 import alpha.rulp.ximpl.runtime.factor.XRFactorWhen;
 import alpha.rulp.ximpl.thread.factor.XRFactorDoParallel;
@@ -176,6 +181,8 @@ public class XRLoadBaseObject implements IRObjectLoader {
 
 		RulpUtility.addFrameObject(sysFrame, new XRFactorNameOf(F_NAME_OF));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorTypeOf(F_TYPE_OF));
+		RulpUtility.addFrameObject(sysFrame, new XRFactorValueOf(F_VALUE_OF));
+		RulpUtility.addFrameObject(sysFrame, new XRFactorValueTypeOf(F_VALUE_TYPE_OF));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorAlias(F_ALIAS));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorEqual(F_EQUAL));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorNotEqual(F_NOT_EQUAL));
@@ -206,6 +213,7 @@ public class XRLoadBaseObject implements IRObjectLoader {
 		RulpUtility.addFrameObject(sysFrame, new XRFactorStrTrimHead(F_STR_TRIM_HEAD));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorStrTrimTail(F_STR_TRIM_TAIL));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorStrMatch(F_STR_MATCH));
+		RulpUtility.addFrameObject(sysFrame, new XRFactorStrStartsWith(F_STR_START_WITH));
 
 		// Arithmetic
 		RulpUtility.addFrameObject(sysFrame, new XRFactorArithmetic(F_O_ADD, ArithmeticType.ADD));
@@ -251,7 +259,7 @@ public class XRLoadBaseObject implements IRObjectLoader {
 		RulpUtility.addFrameObject(sysFrame, new XRFactorColUnion(F_UNION));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorForeach(F_FOREACH));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorGet(F_GET));
-		
+
 		// Thread
 		RulpUtility.addFrameObject(sysFrame, new XRFactorSleep(F_T_SLEEP));
 		RulpUtility.addFrameObject(sysFrame, new XRFactorDoParallel(F_DO_Parallel));

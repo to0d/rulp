@@ -14,6 +14,7 @@ import static alpha.common.ichar.Constant.EN_SEPARATION_DOT;
 import alpha.common.ichar.CharUtil;
 import alpha.rulp.lang.RException;
 import alpha.rulp.runtime.IRTokener;
+import alpha.rulp.utility.StringUtil;
 
 public class XRTokener implements IRTokener {
 
@@ -41,20 +42,6 @@ public class XRTokener implements IRTokener {
 
 	static final int S_0INI = 0; // Init mode
 
-	static final int S1SKI = 1; // Skip mode
-
-	static final int S2BLK = 2; // Blank mode
-
-	static final int S4NAM = 3; // Name mode
-
-	static final int S5INT = 4; // Integer mode
-
-	static final int S6FLO = 5; // Float mode
-
-	static final int S7STR = 6; // String mode
-
-//	static final int SAANY = 7; // any statement except "BLANK" or "END"
-
 	static final int S_BAD = -99; // bad mode
 
 	static final int S_OT1 = -1; // output Name (without curChar)
@@ -67,9 +54,23 @@ public class XRTokener implements IRTokener {
 
 	static final int S_OT5 = -5; // output Symbol (with curChar)
 
+//	static final int SAANY = 7; // any statement except "BLANK" or "END"
+
 	static final int S_OT6 = -6; // output String with curChar
 
-	static final int[][] S_STATE_STRICT = {
+	static final int S1SKI = 1; // Skip mode
+
+	static final int S2BLK = 2; // Blank mode
+
+	static final int S4NAM = 3; // Name mode
+
+	static final int S5INT = 4; // Integer mode
+
+	static final int S6FLO = 5; // Float mode
+
+	static final int S7STR = 6; // String mode
+
+	static final int[][] X_STATE_STRICT = {
 			// -CHAR-NUMBER-BLANK----"------_------.----SYMBOL--END-----(-------)
 			{ S4NAM, S5INT, S2BLK, S7STR, S4NAM, S_OT5, S_OT5, S1SKI, S_OT5, S_OT5 }, // S0INI
 			{ S4NAM, S5INT, S2BLK, S7STR, S4NAM, S_OT5, S_OT5, S1SKI, S_OT5, S_OT5 }, // S1SKI
@@ -80,7 +81,7 @@ public class XRTokener implements IRTokener {
 			{ S7STR, S7STR, S7STR, S_OT6, S7STR, S7STR, S7STR, S7STR, S7STR, S7STR }, // S7STR
 	};
 
-	static final int[][] S_STATE2 = {
+	static final int[][] X_STATE2 = {
 			// -CHAR-NUMBER-BLANK----"------_------.----SYMBOL--END-----(-------)
 			{ S4NAM, S5INT, S2BLK, S7STR, S4NAM, S_OT5, S_OT5, S1SKI, S_OT5, S_OT5 }, // S0INI
 			{ S4NAM, S5INT, S2BLK, S7STR, S4NAM, S_OT5, S_OT5, S1SKI, S_OT5, S_OT5 }, // S1SKI
@@ -170,15 +171,15 @@ public class XRTokener implements IRTokener {
 		return CX_UNKNOWN;
 	}
 
-	private boolean strictMode = true;
-
-	private int[][] state = S_STATE_STRICT;
-
 	protected String content = null;
 
 	protected int curPos = 0;
 
 	protected int length = 0;
+
+	private int[][] state = X_STATE_STRICT;
+
+	private boolean strictMode = true;
 
 	protected Token _scan(int begPos) throws RException {
 
@@ -190,6 +191,7 @@ public class XRTokener implements IRTokener {
 
 		char lastChar = 0;
 		char stringBeginSymbol = 0;
+		int escapeCount = 0;
 
 		if (begPos >= length) {
 			return null;
@@ -297,6 +299,15 @@ public class XRTokener implements IRTokener {
 					stringBeginSymbol = lastChar;
 				}
 
+				// Escape char
+				if (lastChar == '\\' && ((scanPos + 1) <= length)) {
+					char nextChar = content.charAt(scanPos + 1);
+					if (StringUtil.isEscapeChar(nextChar)) {
+						++escapeCount;
+						++scanPos;
+					}
+				}
+
 				break;
 
 			}// switch (curState)
@@ -310,29 +321,6 @@ public class XRTokener implements IRTokener {
 			case S1SKI:
 				return null;
 
-//			case S4NAM:
-//				findTokenType = TokenType.TT_3NAM;
-//				retPos = length;
-//				break;
-//			case S5INT:
-//				findTokenType = TokenType.TT_5INT;
-//				retPos = length;
-//				break;
-//			case S6FLO:
-//				findTokenType = TokenType.TT_6FLT;
-//				retPos = length;
-//				break;
-//			case S2BLK:
-//				findTokenType = TokenType.TT_1BLK;
-//				retPos = length;
-//				break;
-
-			// only one (\")
-//			case S7STR:
-//				findTokenType = TokenType.TT_2SYM;
-//				retPos = begPos + 1;
-//				break;
-
 			default:
 				findTokenType = TokenType.TT_0BAD;
 				retPos = length;
@@ -343,15 +331,43 @@ public class XRTokener implements IRTokener {
 			throw new RException(content + ": invaild length, <" + begPos + ":" + retPos + ">, pos=" + scanPos);
 		}
 
-		return new Token(findTokenType, content.substring(begPos, retPos), retPos);
+		String value = content.substring(begPos, retPos);
+		if (escapeCount > 0) {
+
+			StringBuffer sb = new StringBuffer();
+			int size = value.length();
+
+			NEXT_CHAR: for (int i = 0; i < size; ++i) {
+				char c = value.charAt(i);
+				if (escapeCount > 0 && (i + 1) < size && c == '\\') {
+					char c2 = value.charAt(i + 1);
+					if (StringUtil.isEscapeChar(c2)) {
+						sb.append(c2);
+						++i;
+						--escapeCount;
+						continue NEXT_CHAR;
+					}
+				}
+
+				sb.append(c);
+			}
+
+			if (escapeCount != 0) {
+				throw new RException("Escape string error: " + value);
+			}
+
+			value = sb.toString();
+		}
+
+		return new Token(findTokenType, value, retPos);
 	}
 
 	private void _updateState() {
 
 		if (strictMode) {
-			state = S_STATE_STRICT;
+			state = X_STATE_STRICT;
 		} else {
-			state = S_STATE2;
+			state = X_STATE2;
 		}
 
 	}
@@ -376,14 +392,6 @@ public class XRTokener implements IRTokener {
 		if ((token = _scan(curPos)) == null) {
 			return null;
 		}
-
-//		// -123 or -1.5
-//		if (_isSingleSymbol(token, '-') && (nextToken = _scan(token.endPos)) != null
-//				&& (token.endPos + nextToken.value.length()) == nextToken.endPos
-//				&& (nextToken.type == TokenType.TT_6FLT || nextToken.type == TokenType.TT_5INT)) {
-//
-//			return new Token(nextToken.type, token.value + nextToken.value, nextToken.endPos);
-//		}
 
 		return token;
 	}

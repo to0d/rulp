@@ -121,7 +121,9 @@ public class XRFunction implements IRFunction {
 
 				String para = paraIter.next();
 				IRObject arg = argIter.next();
-				if (arg.getType() != RType.VAR) {
+				if (arg == null) {
+					arg = O_Nil;
+				} else if (arg.getType() != RType.VAR) {
 					arg = RulpFactory.createVar(para, arg);
 				}
 

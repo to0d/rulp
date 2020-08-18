@@ -99,6 +99,12 @@ public class XTokenerTest extends RulpTestBase {
 	}
 
 	@Test
+	public void test_token_escape() {
+		_test_token("\"\\\"", "[B:2:0:3:\"\"];");
+		_test_token("\"a\\\"b\"", "[T:5:0:6:\"a\"b\"];");
+	}
+
+	@Test
 	public void test_token_parse_strict_not() {
 
 		_test_token_not_strict("\")", "[N:1:0:1:\"]; [S:1:0:2:)];");
@@ -114,6 +120,8 @@ public class XTokenerTest extends RulpTestBase {
 
 	@Test
 	public void test_token_parse() {
+		
+		_test_token("\"'hello'\"", "[T:9:0:9:\"'hello'\"];");
 
 		_test_token("a\nb", "[N:1:0:1:a]; [N:1:0:3:b];");
 

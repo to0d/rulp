@@ -26,6 +26,8 @@ import alpha.rulp.lang.IRList;
 import alpha.rulp.lang.IRObject;
 import alpha.rulp.lang.IRString;
 import alpha.rulp.lang.RException;
+import alpha.rulp.lang.error.RParseException;
+import alpha.rulp.lang.error.RulpIncompleteException;
 import alpha.rulp.runtime.IRParser;
 import alpha.rulp.runtime.IRTokener;
 import alpha.rulp.runtime.IRTokener.Token;
@@ -76,6 +78,31 @@ public class XRParser implements IRParser {
 		return token.type == TokenType.TT_9END;
 	}
 
+	static boolean _isSeparatorToken(Token token) throws RException {
+
+		if (token == null) {
+			return true;
+		}
+
+		switch (token.type) {
+		case TT_1BLK:
+		case TT_9END:
+			return true;
+
+		case TT_2SYM:
+			switch (token.value) {
+			case "(":
+			case ")":
+				return true;
+			}
+
+		default:
+
+		}
+
+		return false;
+	}
+
 	private static boolean _isSupportIdentifierHeadToken(Token token) {
 
 		if (token == null || token.value == null || token.value.length() == 0) {
@@ -108,6 +135,17 @@ public class XRParser implements IRParser {
 
 		default:
 			return false;
+		}
+
+		return false;
+	}
+
+	static boolean _isSymbolToken(Token token, char symbol) throws RException {
+
+		if (token != null && token.type == TokenType.TT_2SYM && token.value != null && token.value.length() == 1
+				&& token.value.charAt(0) == symbol) {
+
+			return true;
 		}
 
 		return false;
@@ -495,10 +533,7 @@ public class XRParser implements IRParser {
 
 		_checkRecursion();
 
-		Token token;
-
-		if ((token = _curToken()) != null && token.type == TokenType.TT_2SYM && token.value != null
-				&& token.value.length() == 1 && token.value.charAt(0) == symbol) {
+		if (_isSymbolToken(_curToken(), symbol)) {
 
 			/* output symbol */
 			_pushStack(1);
@@ -542,31 +577,6 @@ public class XRParser implements IRParser {
 
 		_pullStack(depth);
 		return null;
-	}
-
-	static boolean _isSeparatorToken(Token token) throws RException {
-
-		if (token == null) {
-			return true;
-		}
-
-		switch (token.type) {
-		case TT_1BLK:
-		case TT_9END:
-			return true;
-
-		case TT_2SYM:
-			switch (token.value) {
-			case "(":
-			case ")":
-				return true;
-			}
-
-		default:
-
-		}
-
-		return false;
 	}
 
 	private IRObject nextObject() throws RException {
@@ -875,12 +885,19 @@ public class XRParser implements IRParser {
 
 			IRObject obj = nextObject();
 			if (obj == null) {
+
 				Token lastToken = this._curToken();
+
 				int lastLineIndex = lastToken == null ? -1 : lastToken.lineIndex;
 				String lastLine = lastLineIndex == -1 ? null : lines.get(lastLineIndex);
 
-				throw new RException(
-						String.format("Bad Syntax at line %d: token=%s, line=%s", lastLineIndex, lastToken, lastLine));
+				if (_isSymbolToken(lastToken, '(')) {
+					throw new RulpIncompleteException(lastLineIndex,
+							String.format("miss match '(' found in position %d, %s", lastToken.endPos - 1,
+									lastLine.substring(lastToken.endPos - 1)));
+				} else {
+					throw new RParseException(lastLineIndex, String.format("token=%s, line=%s", lastToken, lastLine));
+				}
 			}
 
 			list.add(obj);
